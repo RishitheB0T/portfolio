@@ -1,9 +1,10 @@
 name: Deploy to GitHub Pages
 
-# Runs only when started by hand from the Actions tab, so the site goes live when you decide.
-# Before the first run: Settings → Pages → Source: "GitHub Actions".
-# To redeploy on every push later, add:   push: { branches: [main] }
+# Every push to main rebuilds the site and publishes it; it can also be started by hand
+# from the Actions tab. Needs Settings → Pages → Source: "GitHub Actions".
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
