@@ -6,6 +6,7 @@ import { Builds } from './sections/Builds'
 import { Research } from './sections/Research'
 import { Journey } from './sections/Journey'
 import { Stack } from './sections/Stack'
+import { Contact } from './sections/Contact'
 
 function Backdrop() {
   return (
@@ -45,6 +46,7 @@ export default function App() {
         <Research />
         <Journey />
         <Stack />
+        <Contact />
       </main>
     </>
   )
