@@ -315,3 +315,299 @@ function ChangeTag({ row, className = '' }: { row: QueryRow; className?: string 
     </span>
   )
 }
+
+/* ---------- horizontal bars: instructions per inference ---------- */
+
+const kernels = [
+  { name: 'Naive C (reference)', value: 1151529, perMac: 13.67, speed: '1.00×' },
+  { name: 'DSP SIMD (SMLAD, SXTB16)', value: 479357, perMac: 5.69, speed: '2.40×' },
+  { name: 'SIMD + 2×2 register tiling', value: 280089, perMac: 3.32, speed: '4.11×' },
+]
+const BAR_MAX = 1450000
+const barTicks = [0, 400000, 800000, 1200000]
+
+export function InstructionBars() {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref)
+  const [hover, setHover] = useState<number | null>(null)
+  return (
+    <figure ref={ref}>
+      <figcaption className="mb-4">
+        <div className="text-sm font-medium text-fg">Instructions executed per CNN inference</div>
+        <div className="text-xs text-fg-3">Counted exactly in QEMU with -icount. Fewer is faster.</div>
+      </figcaption>
+      <div className="space-y-3">
+        {kernels.map((k, i) => {
+          const w = (k.value / BAR_MAX) * 100
+          return (
+            <div
+              key={k.name}
+              tabIndex={0}
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
+              onFocus={() => setHover(i)}
+              onBlur={() => setHover(null)}
+              aria-label={`${k.name}: ${fmt(k.value)} instructions, ${k.perMac} per multiply-accumulate, ${k.speed} versus naive`}
+              className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5 rounded-lg md:grid-cols-[13rem_1fr_3.5rem]"
+            >
+              <div className="text-sm text-fg-2">{k.name}</div>
+              <div className="text-right text-base font-semibold text-white md:order-last">{k.speed}</div>
+              <div className="relative col-span-2 h-6 md:col-span-1">
+                {barTicks.map((t) => (
+                  <span key={t} className="absolute inset-y-0 w-px bg-white/[0.07]" style={{ left: `${(t / BAR_MAX) * 100}%` }} />
+                ))}
+                <div
+                  className="absolute inset-y-0 left-0 rounded-r-[4px] bg-bar transition-[width,filter] duration-[1200ms] ease-out"
+                  style={{ width: inView ? `${w}%` : '0%', transitionDelay: `${i * 140}ms`, filter: hover === i ? 'brightness(1.2)' : undefined }}
+                />
+                <span
+                  className="absolute top-1/2 -translate-y-1/2 px-2 font-mono text-[11px] tabular-nums transition-opacity duration-500"
+                  style={{
+                    ...(w > 55 ? { right: `${100 - w}%`, color: ink('#199e70') } : { left: `${w}%`, color: 'var(--color-fg-2)' }),
+                    opacity: inView ? 1 : 0,
+                    transitionDelay: `${900 + i * 140}ms`,
+                  }}
+                >
+                  {fmt(k.value)}
+                </span>
+                {hover === i && (
+                  <Tip x={w / 2}>
+                    <div className="text-sm font-semibold text-white">{fmt(k.value)} instructions</div>
+                    <div className="text-fg-2">
+                      {k.perMac} per multiply-accumulate · {k.speed} vs naive
+                    </div>
+                  </Tip>
+                )}
+              </div>
+            </div>
+          )
+        })}
+        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-[13rem_1fr_3.5rem]">
+          <span className="hidden md:block" />
+          <div className="relative h-5 border-t border-white/10">
+            {barTicks.map((t) => (
+              <span key={t} className="absolute top-1 -translate-x-1/2 font-mono text-[10.5px] text-fg-3 tabular-nums" style={{ left: `${(t / BAR_MAX) * 100}%` }}>
+                {t === 0 ? '0' : `${t / 1000}K`}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+      <TableToggle label="the kernel numbers">
+        <table className="w-full text-xs">
+          <thead className="bg-white/[0.03]">
+            <tr>
+              <th className={th}>Kernel</th>
+              <th className={th}>Instructions / inference</th>
+              <th className={th}>Per MAC</th>
+              <th className={th}>vs naive</th>
+            </tr>
+          </thead>
+          <tbody>
+            {kernels.map((k) => (
+              <tr key={k.name} className="border-t border-white/5">
+                <td className={td}>{k.name}</td>
+                <td className={td}>{fmt(k.value)}</td>
+                <td className={td}>{k.perMac}</td>
+                <td className={td}>{k.speed}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableToggle>
+    </figure>
+  )
+}
+
+/* ---------- scheduler trace: priority inversion, recorded by the kernel ---------- */
+
+type Task = 'pi-high' | 'pi-mid' | 'pi-low' | 'idle'
+type Seg = { task: Task; from: number; to: number; note: string; label?: string }
+const taskColor: Record<Task, string> = {
+  'pi-high': '#d55181',
+  'pi-mid': '#c98500',
+  'pi-low': '#3987e5',
+  idle: '#5d5a78',
+}
+const TRACE_MS = 72
+const tasks: Task[] = ['pi-high', 'pi-mid', 'pi-low', 'idle']
+
+// Segment times read from the tracer's own export (docs/img/priority_inversion.svg in kestrel-rtos).
+const traces: { title: string; result: string; wait: [number, number]; waitLabel: string; segs: Seg[] }[] = [
+  {
+    title: 'Priority inheritance OFF',
+    result: 'pi-high waits ≈65 ms',
+    wait: [4.95, 70.06],
+    waitLabel: 'pi-high blocked on the mutex · ≈65 ms',
+    segs: [
+      { task: 'pi-low', from: 0, to: 4.95, note: 'pi-low takes the mutex and starts its critical section' },
+      { task: 'pi-high', from: 4.95, to: 5.05, note: 'pi-high wakes, needs the mutex, and blocks' },
+      { task: 'pi-low', from: 4.95, to: 7.95, note: 'pi-low keeps the mutex at its own low priority' },
+      { task: 'pi-mid', from: 7.95, to: 57.95, note: 'pi-mid preempts pi-low and runs 50 ms: priority inversion', label: 'pi-mid runs 50 ms' },
+      { task: 'pi-low', from: 57.96, to: 70.06, note: 'pi-low finally finishes its critical section' },
+      { task: 'pi-high', from: 70.06, to: 70.16, note: 'pi-high gets the mutex at 70.1 ms' },
+      { task: 'idle', from: 70.06, to: 72, note: 'Nothing left to run' },
+    ],
+  },
+  {
+    title: 'Priority inheritance ON',
+    result: 'pi-high waits ≈15 ms',
+    wait: [4.78, 20.05],
+    waitLabel: '≈15 ms',
+    segs: [
+      { task: 'pi-low', from: 0, to: 4.78, note: 'pi-low takes the mutex and starts its critical section' },
+      { task: 'pi-high', from: 4.78, to: 4.88, note: 'pi-high blocks on the mutex; pi-low inherits its priority' },
+      { task: 'pi-low', from: 4.78, to: 20.05, note: 'pi-low, boosted to pi-high’s priority, cannot be preempted by pi-mid', label: 'boosted' },
+      { task: 'pi-high', from: 20.05, to: 20.15, note: 'pi-high gets the mutex at 20.1 ms' },
+      { task: 'pi-mid', from: 20.05, to: 70.05, note: 'pi-mid runs only after pi-high has been served', label: 'pi-mid runs 50 ms' },
+      { task: 'idle', from: 70.06, to: 71.85, note: 'Nothing left to run' },
+    ],
+  },
+]
+
+export function PriorityTrace() {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref)
+  const [hover, setHover] = useState<string | null>(null)
+  const pct = (ms: number) => (ms / TRACE_MS) * 100
+
+  return (
+    <figure ref={ref} className="space-y-8">
+      <figcaption className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-fg-2">
+        {tasks.map((t) => (
+          <span key={t} className="flex items-center gap-1.5">
+            <span className="h-2.5 w-4 rounded-[3px]" style={{ background: taskColor[t] }} />
+            <span className="font-mono">{t}</span>
+            <span className="text-fg-3">{t === 'pi-high' ? 'high priority' : t === 'pi-mid' ? 'medium' : t === 'pi-low' ? 'low' : ''}</span>
+          </span>
+        ))}
+        <span className="flex items-center gap-1.5">
+          <span className="hatch h-2.5 w-4 rounded-[3px] border border-white/10" /> waiting for the mutex
+        </span>
+      </figcaption>
+
+      {traces.map((tr, ti) => (
+        <div key={tr.title}>
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <div className="text-sm font-semibold text-fg">{tr.title}</div>
+            <div className={`font-mono text-xs ${ti === 0 ? 'text-rose-200' : 'text-emerald-200'}`}>{tr.result}</div>
+          </div>
+          <div className="relative">
+            <div
+              className="space-y-1.5 transition-[clip-path] ease-linear"
+              style={{
+                clipPath: inView ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
+                transitionDuration: '2600ms',
+                transitionDelay: `${ti * 700}ms`,
+              }}
+            >
+              {tasks.map((task) => (
+                <div key={task} className="grid grid-cols-[4.2rem_1fr] items-center gap-2">
+                  <span className="text-right font-mono text-[11px] text-fg-3">{task}</span>
+                  <div className="relative h-6 rounded-md bg-white/[0.03]">
+                    {task === 'pi-high' && (
+                      <div
+                        className="hatch absolute inset-y-0 flex items-center justify-center overflow-hidden rounded-[3px] border border-[#d55181]/40"
+                        style={{ left: `${pct(tr.wait[0])}%`, width: `${pct(tr.wait[1] - tr.wait[0])}%` }}
+                      >
+                        <span className="rounded bg-ink-850/90 px-1.5 text-[10.5px] whitespace-nowrap text-fg-2">{tr.waitLabel}</span>
+                      </div>
+                    )}
+                    {tr.segs
+                      .filter((s) => s.task === task)
+                      .map((s) => {
+                        const id = `${ti}-${s.task}-${s.from}`
+                        return (
+                          <div
+                            key={id}
+                            tabIndex={0}
+                            aria-label={`${s.task}, ${s.from.toFixed(1)} to ${s.to.toFixed(1)} ms: ${s.note}`}
+                            onMouseEnter={() => setHover(id)}
+                            onMouseLeave={() => setHover(null)}
+                            onFocus={() => setHover(id)}
+                            onBlur={() => setHover(null)}
+                            className="absolute inset-y-0 flex min-w-[3px] items-center overflow-visible rounded-[3px] transition-[filter]"
+                            style={{
+                              left: `${pct(s.from)}%`,
+                              width: `${pct(s.to - s.from)}%`,
+                              background: taskColor[s.task],
+                              filter: hover === id ? 'brightness(1.25)' : undefined,
+                            }}
+                          >
+                            {s.label && (
+                              <span className="truncate px-2 text-[10.5px] font-semibold" style={{ color: ink(taskColor[s.task]) }}>
+                                {s.label}
+                              </span>
+                            )}
+                            {hover === id && (
+                              <Tip x={50} below={s.task === 'pi-high'}>
+                                <div className="font-semibold text-white">
+                                  {s.from.toFixed(1)}–{s.to.toFixed(1)} ms
+                                </div>
+                                <div className="text-fg-2">{s.note}</div>
+                              </Tip>
+                            )}
+                          </div>
+                        )
+                      })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 left-[4.7rem]">
+              <span
+                className="absolute inset-y-[-4px] w-0.5 rounded bg-white shadow-[0_0_14px_2px_rgba(255,255,255,.6)] transition-[left,opacity] ease-linear"
+                style={{
+                  left: inView ? '100%' : '0%',
+                  opacity: inView ? 0 : 1,
+                  transitionDuration: '2600ms, 400ms',
+                  transitionDelay: `${ti * 700}ms, ${ti * 700 + 2600}ms`,
+                }}
+              />
+            </div>
+          </div>
+          <div className="mt-1 grid grid-cols-[4.2rem_1fr] gap-2">
+            <span />
+            <div className="relative h-4">
+              {[0, 10, 20, 30, 40, 50, 60, 70].map((t) => (
+                <span
+                  key={t}
+                  className="absolute -translate-x-1/2 font-mono text-[10px] text-fg-3 tabular-nums max-sm:[&:nth-child(even)]:hidden"
+                  style={{ left: `${pct(t)}%` }}
+                >
+                  {t} ms
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+      <TableToggle label="the trace">
+        <table className="w-full min-w-[30rem] text-xs">
+          <thead className="bg-white/[0.03]">
+            <tr>
+              <th className={th}>Run</th>
+              <th className={th}>Task</th>
+              <th className={th}>From – to</th>
+              <th className={th}>What happens</th>
+            </tr>
+          </thead>
+          <tbody>
+            {traces.flatMap((tr) =>
+              tr.segs.map((s) => (
+                <tr key={`${tr.title}-${s.task}-${s.from}`} className="border-t border-white/5">
+                  <td className={td}>{tr.title.replace('Priority inheritance ', 'PI ')}</td>
+                  <td className={`${td} font-mono`}>{s.task}</td>
+                  <td className={td}>
+                    {s.from.toFixed(1)}–{s.to.toFixed(1)} ms
+                  </td>
+                  <td className={td}>{s.note}</td>
+                </tr>
+              )),
+            )}
+          </tbody>
+        </table>
+      </TableToggle>
+    </figure>
+  )
+}

@@ -2,6 +2,7 @@ import { ArrowDown } from 'lucide-react'
 import { Reveal, SectionHeading } from '../components/ui'
 import { PlacementPrep } from './PlacementPrep'
 import { ProductCatalog } from './ProductCatalog'
+import { Kestrel } from './Kestrel'
 
 const cards = [
   {
@@ -85,6 +86,8 @@ export function Builds() {
         <PlacementPrep />
         <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
         <ProductCatalog />
+        <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+        <Kestrel />
       </div>
     </section>
   )
