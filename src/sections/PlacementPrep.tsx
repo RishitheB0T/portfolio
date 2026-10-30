@@ -4,6 +4,7 @@ import {
   Blocks,
   Bot,
   Briefcase,
+  CheckCircle2,
   ClipboardList,
   Clock,
   Container,
@@ -18,13 +19,15 @@ import {
   Maximize2,
   Monitor,
   RotateCcw,
+  Scissors,
   Search,
   ShieldCheck,
   Sparkles,
   Star,
   Target,
+  Wrench,
 } from 'lucide-react'
-import { BrowserFrame, Reveal, Spotlight } from '../components/ui'
+import { BrowserFrame, IllustrationTag, Reveal, Spotlight } from '../components/ui'
 import { Lightbox, type Shot } from '../components/Lightbox'
 import { ProjectHeader, SubHeading, TechRow } from '../components/project'
 import { useInView, useReducedMotion } from '../lib/hooks'
@@ -215,6 +218,130 @@ function Architecture() {
   )
 }
 
+const ragSteps = [
+  { icon: <FileText />, title: 'Job-description PDF', sub: 'read with PDFBox' },
+  { icon: <Scissors />, title: 'Split', sub: '~200-token passages' },
+  { icon: <Cpu />, title: 'Embed locally', sub: 'all-MiniLM-L6-v2 · 384-dim · inside the JVM' },
+  { icon: <Database />, title: 'pgvector', sub: 'HNSW index · cosine distance' },
+  { icon: <Search />, title: 'Retrieve', sub: 'question embedded the same way; nearest passages' },
+  { icon: <Sparkles />, title: 'Generate', sub: 'Claude answers and reviews from real passages' },
+]
+
+function RagPipeline() {
+  return (
+    <div className="relative">
+      <div className="pointer-events-none absolute top-[38px] right-[8%] left-[8%] hidden h-0.5 overflow-hidden rounded bg-white/10 lg:block">
+        <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-fuchsia-400 to-transparent" style={{ animation: 'beam 2.6s linear infinite' }} />
+      </div>
+      <ol className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+        {ragSteps.map((s, i) => (
+          <Reveal as="li" key={s.title} delay={i * 80} className="relative">
+            <div className="glass h-full rounded-2xl p-4 text-center">
+              <div className="relative mx-auto grid size-12 place-items-center rounded-2xl bg-ink-850 text-fuchsia-300 ring-1 ring-fuchsia-400/30 [&>svg]:size-5">
+                {s.icon}
+                <span className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 font-mono text-[10px] font-bold text-white">
+                  {i + 1}
+                </span>
+              </div>
+              <div className="mt-3 text-sm font-semibold">{s.title}</div>
+              <div className="mt-1 text-xs leading-relaxed text-fg-3">{s.sub}</div>
+            </div>
+          </Reveal>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+type Msg = { who: 'user' | 'bot' | 'tool'; text: ReactNode; call?: string }
+const chat: Msg[] = [
+  { who: 'user', text: 'Which drives can I apply to?' },
+  { who: 'tool', call: 'eligibleDrives()', text: '2 drives: Nimbus Systems, Orbit Analytics' },
+  { who: 'bot', text: <>You qualify for two: <b>Nimbus Systems</b>, Software Development Engineer (closes 25 Oct), and <b>Orbit Analytics</b>, Graduate Engineer Trainee (closes 22 Nov).</> },
+  { who: 'user', text: 'Apply me to Nimbus.' },
+  { who: 'tool', call: 'applyToDrive(driveId)', text: 'applied · runs as the signed-in student' },
+  { who: 'bot', text: <>Done: your application to <b>Nimbus Systems</b> is in. You’ll see it under My applications, and you’ll be notified when the status changes.</> },
+]
+
+function ChatDemo() {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref)
+  const reduced = useReducedMotion()
+  const [n, setN] = useState(0)
+  const [run, setRun] = useState(0)
+
+  useEffect(() => {
+    if (!inView) return
+    if (reduced) {
+      setN(chat.length)
+      return
+    }
+    if (n >= chat.length) return
+    const t = window.setTimeout(() => setN(n + 1), n === 0 ? 400 : chat[n].who === 'tool' ? 900 : 1300)
+    return () => window.clearTimeout(t)
+  }, [inView, n, run, reduced])
+
+  const thinking = inView && n < chat.length && chat[n].who !== 'user'
+
+  return (
+    <div ref={ref} className="glass flex h-full flex-col overflow-hidden rounded-3xl">
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500">
+            <Bot className="size-4 text-white" />
+          </span>
+          <div>
+            <div className="text-sm font-semibold">Placement assistant</div>
+            <div className="text-[11px] text-fg-3">5 tools · bound to the signed-in student</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <IllustrationTag />
+          <button
+            onClick={() => {
+              setN(0)
+              setRun((r) => r + 1)
+            }}
+            className="grid size-8 place-items-center rounded-full text-fg-3 hover:bg-white/10 hover:text-white"
+            aria-label="Replay conversation"
+          >
+            <RotateCcw className="size-4" />
+          </button>
+        </div>
+      </div>
+      <div className="flex min-h-[25rem] flex-1 flex-col gap-3 p-5" aria-live="polite">
+        {chat.slice(0, n).map((m, i) =>
+          m.who === 'tool' ? (
+            <div key={`${run}-${i}`} className="mx-auto w-full max-w-sm rounded-xl border border-emerald-400/25 bg-emerald-400/[0.07] px-3 py-2 font-mono text-[11.5px]" style={{ animation: 'rise .35s both' }}>
+              <div className="flex items-center gap-1.5 text-emerald-300">
+                <Wrench className="size-3" /> @Tool {m.call}
+              </div>
+              <div className="mt-0.5 text-fg-2">→ {m.text}</div>
+            </div>
+          ) : (
+            <div
+              key={`${run}-${i}`}
+              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                m.who === 'user' ? 'self-end rounded-br-md bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white' : 'self-start rounded-bl-md bg-white/[0.07] text-fg-2 [&_b]:text-white'
+              }`}
+              style={{ animation: 'rise .35s both' }}
+            >
+              {m.text}
+            </div>
+          ),
+        )}
+        {thinking && (
+          <div className="flex gap-1 self-start rounded-2xl bg-white/[0.06] px-4 py-3" aria-hidden>
+            {[0, 1, 2].map((d) => (
+              <span key={d} className="size-1.5 animate-bounce rounded-full bg-fg-3" style={{ animationDelay: `${d * 120}ms` }} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 const highlights = [
   { icon: <KeyRound />, title: 'Stateless JWT, role re-read on every request', body: 'A promotion takes effect immediately, and the browser refreshes its token to match.' },
   { icon: <Layers />, title: 'Controllers speak HTTP, services speak the domain', body: 'Services return Optional or throw a reason-carrying exception, so scheduled jobs reuse them untouched.' },
@@ -222,6 +349,18 @@ const highlights = [
   { icon: <Inbox />, title: 'A database table as a job queue', body: 'Resume reviews survive restarts with no message broker, and no connection is held during the slow model call.' },
   { icon: <RotateCcw />, title: 'At-most-once reminders', body: 'A partial unique index makes “never send the same reminder twice” a database rule, not a hope.' },
 ]
+
+const shipped = [
+  'Drives board with automatic eligibility and search',
+  'Applications: apply, withdraw, decide, notes, CSV export',
+  'Four roles with JWT, recruiter scoping, admin tools',
+  'Notifications and deadline reminders',
+  'AI resume feedback grounded in the job description',
+  'AI assistant with tool calling',
+  'Semantic search over job descriptions (RAG, pgvector)',
+  'Docker images and CI',
+]
+const next = ['Company-wise AI mock interviews', 'Q&A over placement notices, with sources', 'Email delivery for reminders and password reset']
 
 export function PlacementPrep() {
   return (
@@ -306,6 +445,86 @@ export function PlacementPrep() {
             </Reveal>
           ))}
         </div>
+      </div>
+
+      <div className="mt-24">
+        <SubHeading kicker="AI and RAG" title="Answers grounded in the real job description" sub="Retrieval finds the right passages by meaning; generation puts them in front of Claude. Embeddings are computed locally, so search works without any API key." />
+        <RagPipeline />
+        <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.1fr]">
+          <Reveal>
+            <ChatDemo />
+          </Reveal>
+          <Reveal delay={100}>
+            <div className="glass h-full rounded-3xl p-6">
+              <h5 className="font-display text-lg font-semibold">How tool calling works</h5>
+              <p className="mt-2 text-sm leading-relaxed text-fg-2">
+                Spring AI runs the loop: the model asks for a tool, the Java method runs, and its result goes back to the model. The
+                tools are bound to the signed-in student, so the model can never reach anyone else’s data.
+              </p>
+              <ul className="mt-5 space-y-2">
+                {[
+                  ['eligibleDrives()', 'open drives this student qualifies for'],
+                  ['allDrives()', 'the whole board, eligible or not'],
+                  ['myApplications()', 'company, role and current status'],
+                  ['applyToDrive(driveId)', 'only when the student clearly asks'],
+                  ['searchJobDescriptions(query)', 'RAG search by meaning'],
+                ].map(([sig, what]) => (
+                  <li key={sig} className="flex flex-col gap-0.5 rounded-xl bg-white/[0.03] px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                    <code className="font-mono text-[12.5px] text-emerald-300">{sig}</code>
+                    <span className="text-xs text-fg-3">{what}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-5 rounded-2xl border border-white/[0.07] bg-ink-900/60 p-4 text-sm leading-relaxed text-fg-2">
+                <b className="text-white">Structured output.</b> The resume review comes back as JSON parsed straight into a Java
+                record (score, summary, strengths, improvements), with the score clamped to 0–100. Reviews run in a background queue.
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+
+      <div className="mt-24 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <Reveal>
+          <div className="glass h-full rounded-3xl p-6">
+            <h5 className="font-display text-lg font-semibold">Roadmap</h5>
+            <ul className="mt-4 space-y-2">
+              {shipped.map((s) => (
+                <li key={s} className="flex items-start gap-2.5 text-sm text-fg-2">
+                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-300" /> {s}
+                </li>
+              ))}
+              {next.map((s) => (
+                <li key={s} className="flex items-start gap-2.5 text-sm text-fg">
+                  <span className="mt-1 grid size-3.5 shrink-0 place-items-center rounded-full border border-fuchsia-300">
+                    <span className="size-1.5 rounded-full bg-fuchsia-300" />
+                  </span>
+                  {s} <span className="text-xs text-fuchsia-300">next</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
+        <Reveal delay={100}>
+          <div className="glass h-full rounded-3xl p-6">
+            <h5 className="font-display text-lg font-semibold">Quality, measured</h5>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              {[
+                ['226', 'backend tests', 'real PostgreSQL + pgvector via Testcontainers, real signed JWTs'],
+                ['89', 'frontend tests', 'Vitest + Testing Library: every role sees exactly its controls'],
+                ['114', 'Postman assertions', 'each restricted endpoint called by a role that may, and one that may not'],
+                ['CI', 'on every push', 'GitHub Actions builds and tests backend and frontend'],
+              ].map(([v, k, d]) => (
+                <div key={k} className="rounded-2xl bg-white/[0.03] p-4">
+                  <div className="text-2xl font-semibold text-white">{v}</div>
+                  <div className="text-xs font-medium text-fg">{k}</div>
+                  <div className="mt-1 text-[11px] leading-relaxed text-fg-3">{d}</div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-xs text-fg-3">The AI tool-calling loop is tested against a fake Anthropic server.</p>
+          </div>
+        </Reveal>
       </div>
 
       <Reveal className="mt-8">
