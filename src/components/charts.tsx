@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react'
-import { Table2 } from 'lucide-react'
+import { useRef, useState, type ReactNode } from 'react'
+import { AlertTriangle, Table2 } from 'lucide-react'
+import { useInView } from '../lib/hooks'
 
 /* ---------- shared helpers ---------- */
 
@@ -151,5 +152,166 @@ export function SegmentedBar({
         </table>
       </TableToggle>
     </figure>
+  )
+}
+
+/* ---------- dumbbell: query time before vs after indexes (log scale) ---------- */
+
+type QueryRow = { label: string; req: string; before: number; after: number; change: string; slower?: boolean }
+
+export const queryRows: QueryRow[] = [
+  { label: 'Home page, newest first', req: 'GET /api/v1/products', before: 42.2, after: 0.087, change: '483×' },
+  { label: 'Category page, newest', req: '?category=HOME', before: 37.9, after: 0.136, change: '279×' },
+  { label: 'Category by price, low → high', req: '&sort=price_asc', before: 37.8, after: 0.084, change: '451×' },
+  { label: 'Category by price, high → low', req: '&sort=price_desc', before: 37.1, after: 0.117, change: '317×' },
+  { label: 'Price range, in stock', req: '?minPrice=1000&maxPrice=2000&inStock=true', before: 41.3, after: 0.112, change: '369×' },
+  { label: 'Name search, common word', req: '?q=linen', before: 48.6, after: 0.664, change: '73×' },
+  { label: 'Name search, no match', req: '?q=zebra', before: 44.5, after: 193, change: '4.3× slower', slower: true },
+]
+
+const LOG_MIN = Math.log10(0.05)
+const LOG_MAX = Math.log10(300)
+const xLog = (v: number) => ((Math.log10(v) - LOG_MIN) / (LOG_MAX - LOG_MIN)) * 100
+const logTicks = [0.1, 1, 10, 100]
+
+export function QueryDumbbell() {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref)
+  const [hover, setHover] = useState<number | null>(null)
+
+  return (
+    <figure ref={ref}>
+      <figcaption className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-fg-2">
+        <span className="flex items-center gap-2">
+          <span className="size-3 rounded-full bg-series-before ring-2 ring-ink-850" /> Before: no search indexes (V1)
+        </span>
+        <span className="flex items-center gap-2">
+          <span className="size-3 rounded-full bg-series-after ring-2 ring-ink-850" /> After: four indexes from measured plans (V2)
+        </span>
+      </figcaption>
+
+      <div className="space-y-1">
+        {queryRows.map((r, i) => {
+          const xb = xLog(r.before)
+          const xa = inView ? xLog(r.after) : xb
+          const lo = Math.min(xa, xb)
+          const hi = Math.max(xa, xb)
+          const delay = `${i * 90}ms`
+          return (
+            <div
+              key={r.label}
+              tabIndex={0}
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
+              onFocus={() => setHover(i)}
+              onBlur={() => setHover(null)}
+              aria-label={`${r.label}: ${r.before} ms before, ${r.after} ms after, ${r.slower ? r.change : `${r.change} faster`}`}
+              className={`grid grid-cols-1 items-center gap-x-4 gap-y-1 rounded-xl px-2 py-2 transition md:grid-cols-[14.5rem_1fr_6.5rem] ${
+                hover === i ? 'bg-white/[0.04]' : ''
+              }`}
+            >
+              <div className="flex items-baseline justify-between gap-3 md:block">
+                <div className="text-sm text-fg">{r.label}</div>
+                <div className="hidden truncate font-mono text-[10.5px] text-fg-3 md:block">{r.req}</div>
+                <ChangeTag row={r} className="md:hidden" />
+              </div>
+              <div className="relative h-8">
+                {logTicks.map((t) => (
+                  <span key={t} className="absolute inset-y-0 w-px bg-white/[0.07]" style={{ left: `${xLog(t)}%` }} />
+                ))}
+                <span
+                  className="absolute top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-gradient-to-r from-series-after to-series-before transition-all duration-[1400ms] ease-out"
+                  style={{
+                    left: `${lo}%`,
+                    width: `${hi - lo}%`,
+                    transitionDelay: delay,
+                    backgroundImage: r.slower ? 'linear-gradient(90deg, var(--color-series-before), var(--color-series-after))' : undefined,
+                  }}
+                />
+                <span
+                  className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-series-before ring-2 ring-ink-850"
+                  style={{ left: `${xb}%` }}
+                />
+                <span
+                  className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-series-after ring-2 ring-ink-850 transition-[left] duration-[1400ms] ease-out"
+                  style={{ left: `${xa}%`, transitionDelay: delay }}
+                />
+                {hover === i && (
+                  <Tip x={xLog(r.after)}>
+                    <div className="text-sm font-semibold text-white">
+                      {r.after} ms <span className="font-normal text-fg-3">after</span>
+                    </div>
+                    <div className="text-fg-2">
+                      {r.before} ms before · {r.slower ? r.change : `${r.change} faster`}
+                    </div>
+                    <div className="mt-0.5 font-mono text-[10px] text-fg-3">{r.req}</div>
+                  </Tip>
+                )}
+              </div>
+              <ChangeTag row={r} className="hidden md:flex" />
+            </div>
+          )
+        })}
+        <div className="grid grid-cols-1 gap-x-4 px-2 md:grid-cols-[14.5rem_1fr_6.5rem]">
+          <span className="hidden md:block" />
+          <div className="relative h-5 border-t border-white/10">
+            {logTicks.map((t) => (
+              <span
+                key={t}
+                className="absolute top-1 -translate-x-1/2 font-mono text-[10.5px] text-fg-3 tabular-nums"
+                style={{ left: `${xLog(t)}%` }}
+              >
+                {t} ms
+              </span>
+            ))}
+          </div>
+        </div>
+        <p className="px-2 pt-2 text-center text-[11px] text-fg-3 md:pl-[15.5rem] md:text-left">
+          Time inside MySQL on 100,000 products, median of 3 warm <span className="font-mono">EXPLAIN ANALYZE</span> runs. Log scale: each gridline is 10× the last.
+        </p>
+      </div>
+
+      <TableToggle label="the benchmark">
+        <table className="w-full min-w-[34rem] text-xs">
+          <thead className="bg-white/[0.03]">
+            <tr>
+              <th className={th}>Query</th>
+              <th className={th}>Request</th>
+              <th className={th}>Before</th>
+              <th className={th}>After</th>
+              <th className={th}>Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {queryRows.map((r) => (
+              <tr key={r.label} className="border-t border-white/5">
+                <td className={td}>{r.label}</td>
+                <td className={`${td} font-mono text-[10.5px]`}>{r.req}</td>
+                <td className={td}>{r.before} ms</td>
+                <td className={td}>{r.after} ms</td>
+                <td className={td}>{r.slower ? r.change : `${r.change} faster`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableToggle>
+    </figure>
+  )
+}
+
+function ChangeTag({ row, className = '' }: { row: QueryRow; className?: string }) {
+  if (row.slower)
+    return (
+      <span
+        className={`w-fit shrink-0 items-center gap-1 rounded-full border border-rose-400/30 bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-200 ${className}`}
+      >
+        <AlertTriangle className="size-3" /> {row.change}
+      </span>
+    )
+  return (
+    <span className={`shrink-0 items-baseline gap-1 text-right ${className}`}>
+      <span className="text-lg font-semibold text-white">{row.change}</span>
+      <span className="text-[11px] text-fg-3">faster</span>
+    </span>
   )
 }

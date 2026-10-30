@@ -1,6 +1,7 @@
 import { ArrowDown } from 'lucide-react'
 import { Reveal, SectionHeading } from '../components/ui'
 import { PlacementPrep } from './PlacementPrep'
+import { ProductCatalog } from './ProductCatalog'
 
 const cards = [
   {
@@ -82,6 +83,8 @@ export function Builds() {
 
       <div className="mt-28 space-y-36">
         <PlacementPrep />
+        <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+        <ProductCatalog />
       </div>
     </section>
   )
