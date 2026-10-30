@@ -1,5 +1,6 @@
 import { Nav } from './components/Nav'
 import { Hero } from './sections/Hero'
+import { About } from './sections/About'
 
 function Backdrop() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
       <Nav />
       <main className="overflow-x-clip">
         <Hero />
+        <About />
       </main>
     </>
   )
