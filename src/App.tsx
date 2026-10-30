@@ -1,3 +1,4 @@
+import { Nav } from './components/Nav'
 
 function Backdrop() {
   return (
@@ -24,7 +25,11 @@ function Backdrop() {
 export default function App() {
   return (
     <>
+      <a href="#about" className="sr-only z-[200] rounded-lg bg-white px-4 py-2 text-ink-950 focus:not-sr-only focus:fixed focus:top-4 focus:left-4">
+        Skip to content
+      </a>
       <Backdrop />
+      <Nav />
       <main className="overflow-x-clip">
       </main>
     </>
