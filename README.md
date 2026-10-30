@@ -3,6 +3,8 @@
 A single-page portfolio that shows my projects in depth: what each one does, how it is built, and the measured evidence
 behind it. Built with the same frontend stack I use in my projects: **React 19, TypeScript, Vite and Tailwind CSS 4**.
 
+**Live site: [rishitheb0t.github.io/portfolio](https://rishitheb0t.github.io/portfolio/)**
+
 ![Preview of the portfolio](public/og.jpg)
 
 ## What's inside
@@ -72,9 +74,9 @@ public/
 
 The build is a static folder (`dist/`) with relative paths, so it works on any static host without changes:
 
-- **GitHub Pages:** in the repository settings, open *Pages* and set the source to *GitHub Actions*, then run the
-  *Deploy to GitHub Pages* workflow from the *Actions* tab. The site appears at
-  `https://rishitheb0t.github.io/portfolio/`. On a free GitHub plan, Pages needs the repository to be public.
+- **GitHub Pages (what this repository uses):** every push to `main` runs the *Deploy to GitHub Pages* workflow, which
+  builds the site and publishes it at `https://rishitheb0t.github.io/portfolio/`. It needs *Settings → Pages → Source:
+  GitHub Actions*, and on a free GitHub plan the repository must be public.
 - **Vercel or Netlify:** import the repository; the build command is `npm run build` and the output folder is `dist`.
 
 ## Credits
