@@ -1,1 +1,300 @@
 @import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Design tokens. Every color in the site comes from here, so the whole
+   palette can be retuned in one place.
+   ------------------------------------------------------------------ */
+@theme {
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, monospace;
+
+  --color-ink-950: #07060f;
+  --color-ink-900: #0b0a16;
+  --color-ink-850: #100f1c;
+  --color-ink-800: #161527;
+  --color-ink-700: #211f37;
+  --color-ink-600: #2e2b4a;
+  --color-fg: #f4f3ff;
+  --color-fg-2: #c4c1dc;
+  --color-fg-3: #8f8cab;
+
+  /* Chart series, validated for the dark surface (dataviz checks). */
+  --color-series-before: #9085e9;
+  --color-series-after: #c98500;
+  --color-task-high: #d55181;
+  --color-task-mid: #c98500;
+  --color-task-low: #3987e5;
+  --color-task-idle: #5d5a78;
+  --color-bar: #199e70;
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float 10s ease-in-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-gradient: gradient-pan 8s ease infinite;
+  --animate-spin-slow: spin 18s linear infinite;
+  --animate-blink: blink 1s step-end infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes gradient-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+@keyframes drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(8vw, 6vh) scale(1.15); }
+  66% { transform: translate(-6vw, 10vh) scale(0.9); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10vw, -8vh) scale(1.2); }
+}
+@keyframes ping-soft {
+  0% { transform: scale(1); opacity: 0.7; }
+  80%, 100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes flow-x {
+  from { left: -10%; }
+  to { left: 100%; }
+}
+@keyframes flow-y {
+  from { top: -10%; }
+  to { top: 100%; }
+}
+@keyframes beam {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes grow {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes draw {
+  from { stroke-dashoffset: 900; }
+  to { stroke-dashoffset: -900; }
+}
+@keyframes eq {
+  from { transform: scaleY(0.55); }
+  to { transform: scaleY(1); }
+}
+@keyframes pulse-path {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+/* ------------------------------------------------------------------
+   Base
+   ------------------------------------------------------------------ */
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    scroll-padding-top: 96px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-ink-950);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: rgb(217 70 239 / 0.35);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid #d946ef;
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-ink-950); }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(#8b5cf6, #d946ef);
+    border-radius: 999px;
+    border: 3px solid var(--color-ink-950);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Reusable effects
+   ------------------------------------------------------------------ */
+@layer components {
+  /* Translucent panel. Elements that float over content add .frost for a backdrop blur;
+     in-flow cards skip it, since blurring behind dozens of cards slows scrolling on phones. */
+  .glass {
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.02));
+    border: 1px solid rgb(255 255 255 / 0.08);
+  }
+  .frost {
+    @apply backdrop-blur-xl backdrop-saturate-150;
+  }
+
+  /* Text filled with a moving gradient */
+  .text-gradient {
+    background-image: linear-gradient(100deg, #a78bfa, #f0abfc 30%, #f472b6 50%, #67e8f9 75%, #a78bfa);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: var(--animate-gradient);
+  }
+  .text-accent {
+    background-image: linear-gradient(100deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* A 1px gradient border drawn with a mask, so the inside stays transparent */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--accent, #8b5cf6), transparent 40%, transparent 60%, var(--accent-2, #22d3ee));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Card that glows where the pointer is (--mx/--my are set from JS) */
+  .spotlight {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .spotlight::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, -20%), color-mix(in srgb, var(--accent, #a78bfa) 22%, transparent), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .spotlight:hover::after {
+    opacity: 1;
+  }
+
+  /* Scroll-reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Faint grid used behind the hero */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+  }
+
+  /* Film grain over the whole page */
+  .grain {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.55'/></svg>");
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+  }
+
+  /* Animated data connector: a line with a dot travelling along it.
+     Vertical on phones, horizontal from md up. */
+  .connector {
+    position: relative;
+    width: 2px;
+    height: 36px;
+    margin-inline: auto;
+    background: linear-gradient(var(--accent, #8b5cf6), var(--accent-2, #22d3ee));
+    opacity: 0.85;
+    overflow: visible;
+  }
+  .connector::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 0 12px 3px var(--accent-2, #22d3ee);
+    animation: flow-y 1.8s linear infinite;
+  }
+  @media (min-width: 768px) {
+    .connector.md-h {
+      width: 100%;
+      min-width: 28px;
+      height: 2px;
+      margin-block: auto;
+      background: linear-gradient(90deg, var(--accent, #8b5cf6), var(--accent-2, #22d3ee));
+    }
+    .connector.md-h::after {
+      top: 50%;
+      left: 0;
+      margin-left: 0;
+      margin-top: -4px;
+      animation-name: flow-x;
+    }
+  }
+
+  .caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.1em;
+    margin-left: 2px;
+    vertical-align: -0.18em;
+    background: currentColor;
+    animation: var(--animate-blink);
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+
+  /* Diagonal hatch, used for "waiting" intervals in the trace chart */
+  .hatch {
+    background-image: repeating-linear-gradient(135deg, rgb(213 81 129 / 0.5) 0 2px, transparent 2px 7px);
+  }
+}
+
+/* Respect "reduce motion": no drifting, typing, floating or reveal travel. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
