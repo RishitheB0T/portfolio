@@ -2,6 +2,7 @@ import { Nav } from './components/Nav'
 import { Hero } from './sections/Hero'
 import { About } from './sections/About'
 import { Numbers } from './sections/Numbers'
+import { Builds } from './sections/Builds'
 
 function Backdrop() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
         <Hero />
         <About />
         <Numbers />
+        <Builds />
       </main>
     </>
   )
