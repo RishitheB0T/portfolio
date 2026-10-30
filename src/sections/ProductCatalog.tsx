@@ -1,7 +1,9 @@
-import { Check, ShieldAlert } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { ArrowRight, BookOpenText, Check, Database, HardDrive, RefreshCw, Send, ShieldAlert, TimerOff, Zap } from 'lucide-react'
 import { Reveal, Spotlight } from '../components/ui'
 import { ProjectHeader, SubHeading, TechRow } from '../components/project'
 import { QueryDumbbell } from '../components/charts'
+import { useInView, useReducedMotion } from '../lib/hooks'
 
 const phases = [
   'Plan & architecture',
@@ -67,6 +69,198 @@ const indexes = [
   { name: 'ix_product_category_created_at', cols: '(category, created_at)', serves: 'A category page, newest first', why: 'Equality on the first column, order on the second: one direct lookup, 20 entries.' },
   { name: 'ix_product_category_price', cols: '(category, price)', serves: 'A category sorted by price, either direction; category counts', why: 'Same pattern; price DESC, id DESC is simply a backward read.' },
   { name: 'ix_product_price', cols: '(price)', serves: 'A price range across all categories, cheapest first', why: 'The range and the order are on the same column.' },
+]
+
+type Step = { icon: ReactNode; title: string; sub: string }
+const flows: { key: string; label: string; steps: Step[]; note: string }[] = [
+  {
+    key: 'read',
+    label: 'Read: cache-aside',
+    steps: [
+      { icon: <Send />, title: 'GET /products/{id}', sub: 'one product’s details' },
+      { icon: <Zap />, title: 'Check Redis', sub: 'versioned key, JSON value' },
+      { icon: <Database />, title: 'Miss: read MySQL', sub: 'the source of truth' },
+      { icon: <HardDrive />, title: 'Store a copy', sub: '60-second TTL' },
+      { icon: <Check />, title: '200 OK', sub: 'next read is a hit' },
+    ],
+    note: 'On a hit, the answer comes straight from Redis and MySQL is never touched. Searches always read MySQL, using the measured indexes.',
+  },
+  {
+    key: 'write',
+    label: 'Write: evict after commit',
+    steps: [
+      { icon: <Send />, title: 'PUT /products/{id}', sub: 'full product + the version you read' },
+      { icon: <Database />, title: 'Transaction', sub: 'update row, version + 1' },
+      { icon: <Check />, title: 'Commit', sub: 'outdated version → 409' },
+      { icon: <RefreshCw />, title: 'Evict cached copy', sub: 'after-commit event' },
+      { icon: <Zap />, title: 'Next read refills', sub: 'from MySQL' },
+    ],
+    note: 'Eviction only happens after the transaction commits, so a rolled-back update clears nothing. Both cases are tested.',
+  },
+  {
+    key: 'outage',
+    label: 'Redis outage',
+    steps: [
+      { icon: <Send />, title: 'GET /products/{id}', sub: 'Redis is down' },
+      { icon: <TimerOff />, title: 'Redis times out', sub: 'after 200 ms, not forever' },
+      { icon: <Database />, title: 'Fall back to MySQL', sub: 'same answer, a bit slower' },
+      { icon: <ShieldAlert />, title: 'Count the error', sub: 'cache metrics' },
+      { icon: <Check />, title: '200 OK', sub: 'the service keeps answering' },
+    ],
+    note: 'Proven by pausing the Redis container in a test: reads still answer within the timeouts, writes still succeed, and the cache recovers afterwards.',
+  },
+]
+
+function CacheFlow() {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref)
+  const reduced = useReducedMotion()
+  const [tab, setTab] = useState(0)
+  const [step, setStep] = useState(0)
+  const flow = flows[tab]
+
+  useEffect(() => {
+    if (!inView || reduced) return
+    const t = window.setInterval(() => setStep((s) => (s + 1) % (flow.steps.length + 2)), 900)
+    return () => window.clearInterval(t)
+  }, [inView, reduced, flow.steps.length])
+
+  const active = reduced ? flow.steps.length : step
+
+  return (
+    <div ref={ref} className="glass rounded-3xl p-5 md:p-7">
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Cache flows">
+        {flows.map((f, i) => (
+          <button
+            key={f.key}
+            role="tab"
+            aria-selected={tab === i}
+            onClick={() => {
+              setTab(i)
+              setStep(0)
+            }}
+            className={`rounded-full px-4 py-1.5 text-sm transition ${
+              tab === i ? 'bg-gradient-to-r from-amber-400 to-orange-500 font-semibold text-ink-950' : 'border border-white/10 text-fg-2 hover:text-white'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+      <ol className="mt-7 grid grid-cols-1 gap-3 md:grid-cols-5" role="tabpanel">
+        {flow.steps.map((s, i) => {
+          const lit = i < active
+          return (
+            <li key={`${flow.key}-${i}`} className="relative">
+              <div
+                className={`h-full rounded-2xl border p-4 transition duration-500 ${
+                  lit ? 'border-amber-300/40 bg-amber-300/[0.07] shadow-[0_0_30px_-10px_rgba(251,191,36,.6)]' : 'border-white/[0.07] bg-white/[0.02]'
+                }`}
+              >
+                <div className={`grid size-9 place-items-center rounded-xl transition [&>svg]:size-4.5 ${lit ? 'bg-amber-300 text-ink-950' : 'bg-white/[0.06] text-fg-3'}`}>{s.icon}</div>
+                <div className="mt-3 font-mono text-[12.5px] font-semibold text-fg">{s.title}</div>
+                <div className="mt-0.5 text-xs text-fg-3">{s.sub}</div>
+              </div>
+              {i < flow.steps.length - 1 && (
+                <ArrowRight className={`absolute top-1/2 -right-3 z-10 hidden size-4 -translate-y-1/2 transition md:block ${i < active - 1 ? 'text-amber-300' : 'text-white/20'}`} />
+              )}
+            </li>
+          )
+        })}
+      </ol>
+      <p className="mt-5 text-sm leading-relaxed text-fg-2">{flow.note}</p>
+    </div>
+  )
+}
+
+function RaceProof() {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref)
+  const rows = [
+    { title: '10 simultaneous updates of the same version', win: '200', lose: '409', winner: 3 },
+    { title: '10 simultaneous creates with one SKU', win: '201', lose: '409', winner: 7 },
+  ]
+  return (
+    <div ref={ref} className="glass h-full rounded-3xl p-6">
+      <h5 className="font-display text-lg font-semibold">Concurrency, proven over real HTTP</h5>
+      <p className="mt-1 text-sm text-fg-2">Optimistic locking and a unique SKU: exactly one request wins, the rest get a clear conflict.</p>
+      <div className="mt-5 space-y-5">
+        {rows.map((r, ri) => (
+          <div key={r.title}>
+            <div className="mb-2 text-xs text-fg-3">{r.title}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {Array.from({ length: 10 }, (_, i) => {
+                const won = i === r.winner
+                return (
+                  <span
+                    key={i}
+                    className={`grid h-9 w-11 place-items-center rounded-lg border font-mono text-[11px] font-semibold transition-all duration-500 ${
+                      !inView
+                        ? 'border-white/10 bg-white/[0.03] text-fg-3'
+                        : won
+                          ? 'border-emerald-300/50 bg-emerald-400/20 text-emerald-100'
+                          : 'border-amber-300/30 bg-amber-400/10 text-amber-100'
+                    }`}
+                    style={{ transitionDelay: `${ri * 500 + i * 70}ms` }}
+                  >
+                    {inView ? (won ? r.win : r.lose) : '···'}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 flex flex-wrap gap-4 text-xs text-fg-2">
+        <span className="flex items-center gap-1.5">
+          <Check className="size-3.5 text-emerald-300" /> 1 success
+        </span>
+        <span className="flex items-center gap-1.5">
+          <ShieldAlert className="size-3.5 text-amber-300" /> 9 × 409 Conflict
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function ProblemJson() {
+  const k = (s: string) => <span className="text-sky-300">"{s}"</span>
+  const v = (s: string) => <span className="text-amber-200">"{s}"</span>
+  return (
+    <div className="h-full overflow-hidden rounded-3xl border border-white/10 bg-[#0a0913]">
+      <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-3">
+        <span className="font-mono text-xs text-fg-3">400 · application/problem+json</span>
+        <span className="rounded-full bg-white/[0.06] px-2 py-0.5 font-mono text-[10px] text-fg-2">RFC 9457</span>
+      </div>
+      <pre className="overflow-x-auto p-5 font-mono text-[12px] leading-relaxed text-fg-2">
+        {'{\n  '}
+        {k('type')}: {v('https://catalog.example/problems/validation-failed')},{'\n  '}
+        {k('title')}: {v('Validation failed')},{'\n  '}
+        {k('status')}: <span className="text-fuchsia-300">400</span>,{'\n  '}
+        {k('detail')}: {v('2 fields are invalid.')},{'\n  '}
+        {k('errors')}: [{'\n    { '}
+        {k('field')}: {v('price')}, {k('message')}: {v('must be greater than or equal to 0.00')}
+        {' },\n    { '}
+        {k('field')}: {v('sku')}, {k('message')}: {v('must use only upper-case letters, digits…')}
+        {' }\n  ]\n}'}
+      </pre>
+      <p className="border-t border-white/[0.07] px-5 py-3 text-xs text-fg-3">
+        One error format for every failure: validation, 404, duplicate SKU, version conflict, and 403 on the read-only public deployment.
+      </p>
+    </div>
+  )
+}
+
+const decisions = [
+  ['D-007', 'The public deployment is read-only, enforced by the server'],
+  ['D-008', 'Cache only product details first; search stays on MySQL'],
+  ['D-025', 'Errors as RFC 9457 Problem Details'],
+  ['D-027', 'Optimistic locking: version in the PUT body, 409 on conflict'],
+  ['D-032', 'A sort allowlist that always ends with id'],
+  ['D-038', 'Generated, fingerprinted benchmark data'],
+  ['D-040', 'Four search indexes, chosen from measured plans'],
+  ['D-046', 'Evict after commit, through a transactional event'],
+  ['D-047', '200 ms Redis timeouts, and MySQL as the fallback'],
 ]
 
 export function ProductCatalog() {
@@ -166,6 +360,50 @@ export function ProductCatalog() {
             </Reveal>
           ))}
         </div>
+      </div>
+
+      <div className="mt-24">
+        <SubHeading kicker="Redis caching" title="Fast when Redis is up. Correct when it isn’t." sub="Product details are cached with the cache-aside pattern, cleared after every committed write, and MySQL takes over when Redis fails." />
+        <Reveal>
+          <CacheFlow />
+        </Reveal>
+      </div>
+
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <Reveal>
+          <RaceProof />
+        </Reveal>
+        <Reveal delay={100}>
+          <ProblemJson />
+        </Reveal>
+      </div>
+
+      <div className="mt-24">
+        <SubHeading
+          kicker="Decision log"
+          title="47 decisions, each with its trade-off"
+          sub="Every choice is written down with the alternatives and why they lost. A few of them:"
+        />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {decisions.map(([id, text], i) => (
+            <Reveal key={id} delay={(i % 3) * 60}>
+              <div className="flex h-full items-start gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4">
+                <span className="shrink-0 rounded-md bg-amber-300/15 px-2 py-0.5 font-mono whitespace-nowrap text-[11px] font-semibold text-amber-200">{id}</span>
+                <span className="text-sm leading-snug text-fg-2">{text}</span>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal className="mt-4">
+          <a
+            href="https://github.com/RishitheB0T/product-catalog-service/blob/main/docs/DECISIONS.md"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-medium text-amber-200 hover:text-amber-100"
+          >
+            <BookOpenText className="size-4" /> Read all 47 in DECISIONS.md <ArrowRight className="size-3.5" />
+          </a>
+        </Reveal>
       </div>
 
       <Reveal className="mt-10">
