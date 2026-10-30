@@ -4,6 +4,8 @@ import { About } from './sections/About'
 import { Numbers } from './sections/Numbers'
 import { Builds } from './sections/Builds'
 import { Research } from './sections/Research'
+import { Journey } from './sections/Journey'
+import { Stack } from './sections/Stack'
 
 function Backdrop() {
   return (
@@ -41,6 +43,8 @@ export default function App() {
         <Numbers />
         <Builds />
         <Research />
+        <Journey />
+        <Stack />
       </main>
     </>
   )
