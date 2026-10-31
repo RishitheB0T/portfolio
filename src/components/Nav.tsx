@@ -140,6 +140,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
       { label: 'product-catalog-service: deep dive', hint: 'Project', go: go('product-catalog') },
       { label: 'kestrel-rtos: deep dive', hint: 'Project', go: go('kestrel-rtos') },
       { label: 'RL_PID: deep dive', hint: 'Project', go: go('rl-pid') },
+      { label: 'tiny-reasoner: deep dive', hint: 'Project', go: go('tiny-reasoner') },
       { label: 'EdgeMind', hint: 'Project', go: go('research') },
       { label: 'GitHub profile', hint: 'Link', go: open(links.github) },
       ...(links.linkedin ? [{ label: 'LinkedIn', hint: 'Link', go: open(links.linkedin) }] : []),
@@ -148,6 +149,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
       { label: 'product-catalog-service source', hint: 'Link', go: open('https://github.com/RishitheB0T/product-catalog-service') },
       { label: 'kestrel-rtos source', hint: 'Link', go: open('https://github.com/RishitheB0T/kestrel-rtos') },
       { label: 'RL_PID source', hint: 'Link', go: open('https://github.com/RishitheB0T/RL_PID') },
+      { label: 'tiny-reasoner source', hint: 'Link', go: open('https://github.com/RishitheB0T/tiny-reasoner') },
     ]
   }, [])
 

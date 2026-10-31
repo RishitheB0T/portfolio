@@ -4,6 +4,7 @@ import { PlacementPrep } from './PlacementPrep'
 import { ProductCatalog } from './ProductCatalog'
 import { Kestrel } from './Kestrel'
 import { RlPid } from './RlPid'
+import { TinyReasoner } from './TinyReasoner'
 
 const cards = [
   {
@@ -49,6 +50,16 @@ const cards = [
     glow: 'shadow-rose-500/20',
     img: './images/rl-pid/demo-poster.webp',
   },
+  {
+    id: 'tiny-reasoner',
+    name: 'tiny-reasoner',
+    kind: 'Machine learning from scratch',
+    line: 'A 4.3M-parameter language model built from scratch in PyTorch, taught maths with SFT, then improved with GRPO.',
+    metric: '52→96%',
+    metricLabel: 'hardest trained level, after GRPO',
+    grad: 'from-lime-300 via-yellow-300 to-emerald-400',
+    glow: 'shadow-lime-500/20',
+  },
 ]
 
 export function Builds() {
@@ -59,15 +70,15 @@ export function Builds() {
         eyebrow="Featured builds"
         title={
           <>
-            Four systems, <span className="text-gradient">built from an empty folder.</span>
+            Five systems, <span className="text-gradient">built from an empty folder.</span>
           </>
         }
-        sub="A full-stack platform with applied AI, a performance-focused backend, an operating system for a microcontroller, and a reinforcement-learning controller. Each one below is a deep dive: what it does, how it’s built, and the evidence."
+        sub="A full-stack platform with applied AI, a performance-focused backend, an operating system for a microcontroller, a reinforcement-learning controller, and a language model trained from scratch. Each one below is a deep dive: what it does, how it’s built, and the evidence."
       />
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {cards.map((c, i) => (
-          <Reveal key={c.id} delay={i * 100}>
+          <Reveal key={c.id} delay={i * 100} className={i === 0 ? 'md:col-span-2' : ''}>
             <a href={`#${c.id}`} className={`group relative block h-full overflow-hidden rounded-3xl border border-white/10 bg-ink-900 p-6 shadow-2xl ${c.glow} transition duration-300 hover:-translate-y-1.5`}>
               <div className={`absolute -top-24 -right-24 size-64 rounded-full bg-gradient-to-br ${c.grad} opacity-25 blur-3xl transition group-hover:opacity-40`} />
               {c.img && (
@@ -103,6 +114,8 @@ export function Builds() {
         <Kestrel />
         <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
         <RlPid />
+        <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+        <TinyReasoner />
       </div>
     </section>
   )

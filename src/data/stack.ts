@@ -1,4 +1,4 @@
-export type ProjectKey = 'placement' | 'catalog' | 'kestrel' | 'edgemind' | 'rlpid'
+export type ProjectKey = 'placement' | 'catalog' | 'kestrel' | 'edgemind' | 'rlpid' | 'tiny'
 
 export const projectNames: Record<ProjectKey, string> = {
   placement: 'placement-prep',
@@ -6,6 +6,7 @@ export const projectNames: Record<ProjectKey, string> = {
   kestrel: 'kestrel-rtos',
   edgemind: 'EdgeMind',
   rlpid: 'RL_PID',
+  tiny: 'tiny-reasoner',
 }
 
 export const projectColors: Record<ProjectKey, [string, string]> = {
@@ -14,6 +15,7 @@ export const projectColors: Record<ProjectKey, [string, string]> = {
   kestrel: ['#22d3ee', '#34d399'],
   edgemind: ['#38bdf8', '#818cf8'],
   rlpid: ['#fb7185', '#f472b6'],
+  tiny: ['#a3e635', '#fde047'],
 }
 
 export type Tech = { name: string; icon?: string; usedIn: ProjectKey[] }
@@ -43,6 +45,7 @@ export const layers: Layer[] = [
       { name: 'Spring Security + JWT', icon: 'spring', usedIn: ['placement'] },
       { name: 'Spring Data JPA', icon: 'hibernate', usedIn: ['placement', 'catalog'] },
       { name: 'Spring AI (RAG, tool calling)', icon: 'claude', usedIn: ['placement'] },
+      { name: 'FastAPI (streaming)', icon: 'python', usedIn: ['tiny'] },
       { name: 'Bean Validation', usedIn: ['placement', 'catalog'] },
       { name: 'Maven', icon: 'maven', usedIn: ['placement', 'catalog'] },
       { name: 'JUnit + Mockito', icon: 'junit', usedIn: ['placement', 'catalog'] },
@@ -56,9 +59,9 @@ export const layers: Layer[] = [
       { name: 'MySQL 8.4', icon: 'mysql', usedIn: ['catalog'] },
       { name: 'Redis', icon: 'redis', usedIn: ['catalog'] },
       { name: 'Flyway', icon: 'flyway', usedIn: ['placement', 'catalog'] },
-      { name: 'Docker Compose', icon: 'docker', usedIn: ['placement', 'catalog'] },
+      { name: 'Docker & Compose', icon: 'docker', usedIn: ['placement', 'catalog', 'tiny'] },
       { name: 'Testcontainers', icon: 'docker', usedIn: ['placement', 'catalog'] },
-      { name: 'GitHub Actions', icon: 'githubactions', usedIn: ['placement', 'kestrel'] },
+      { name: 'GitHub Actions', icon: 'githubactions', usedIn: ['placement', 'kestrel', 'tiny'] },
       { name: 'nginx', icon: 'nginx', usedIn: ['placement'] },
       { name: 'Postman', icon: 'postman', usedIn: ['placement'] },
     ],
@@ -72,9 +75,11 @@ export const layers: Layer[] = [
       { name: 'ARM Cortex-M4 / STM32F4', usedIn: ['kestrel', 'edgemind', 'rlpid'] },
       { name: 'CMSIS-DSP', usedIn: ['edgemind'] },
       { name: 'QEMU', usedIn: ['kestrel'] },
-      { name: 'Python + NumPy', icon: 'numpy', usedIn: ['kestrel', 'edgemind', 'rlpid'] },
+      { name: 'Python + NumPy', icon: 'numpy', usedIn: ['kestrel', 'edgemind', 'rlpid', 'tiny'] },
       { name: 'Reinforcement learning (PPO)', icon: 'python', usedIn: ['rlpid'] },
-      { name: 'PyTorch · Stable-Baselines3 · Gymnasium', usedIn: ['rlpid'] },
+      { name: 'PyTorch', usedIn: ['rlpid', 'tiny'] },
+      { name: 'Transformers: SFT, GRPO, LoRA', usedIn: ['tiny'] },
+      { name: 'Stable-Baselines3 · Gymnasium', usedIn: ['rlpid'] },
       { name: 'Control systems', usedIn: ['rlpid'] },
     ],
   },
