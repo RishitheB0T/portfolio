@@ -316,29 +316,47 @@ function ChangeTag({ row, className = '' }: { row: QueryRow; className?: string 
   )
 }
 
-/* ---------- horizontal bars: instructions per inference ---------- */
+/* ---------- horizontal bars: one series, value at the tip ---------- */
 
-const kernels = [
-  { name: 'Naive C (reference)', value: 1151529, perMac: 13.67, speed: '1.00×' },
-  { name: 'DSP SIMD (SMLAD, SXTB16)', value: 479357, perMac: 5.69, speed: '2.40×' },
-  { name: 'SIMD + 2×2 register tiling', value: 280089, perMac: 3.32, speed: '4.11×' },
-]
-const BAR_MAX = 1450000
-const barTicks = [0, 400000, 800000, 1200000]
+type BarRow = { name: string; value: number; valueText?: string; tag: string; tip: string; cells: string[] }
 
-export function InstructionBars() {
+export function HBarChart({
+  title,
+  note,
+  rows,
+  max,
+  ticks,
+  tickLabel,
+  unit,
+  tagWidth = '3.5rem',
+  tableLabel,
+  tableHead,
+}: {
+  title: string
+  note: string
+  rows: BarRow[]
+  max: number
+  ticks: number[]
+  tickLabel: (t: number) => string
+  unit: string
+  tagWidth?: string
+  tableLabel: string
+  tableHead: string[]
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref)
   const [hover, setHover] = useState<number | null>(null)
+  const cols = { ['--tag' as string]: tagWidth }
   return (
     <figure ref={ref}>
       <figcaption className="mb-4">
-        <div className="text-sm font-medium text-fg">Instructions executed per CNN inference</div>
-        <div className="text-xs text-fg-3">Counted exactly in QEMU with -icount. Fewer is faster.</div>
+        <div className="text-sm font-medium text-fg">{title}</div>
+        <div className="text-xs text-fg-3">{note}</div>
       </figcaption>
-      <div className="space-y-3">
-        {kernels.map((k, i) => {
-          const w = (k.value / BAR_MAX) * 100
+      <div className="space-y-3" style={cols}>
+        {rows.map((k, i) => {
+          const w = (k.value / max) * 100
+          const shown = k.valueText ?? fmt(k.value)
           return (
             <div
               key={k.name}
@@ -347,14 +365,14 @@ export function InstructionBars() {
               onMouseLeave={() => setHover(null)}
               onFocus={() => setHover(i)}
               onBlur={() => setHover(null)}
-              aria-label={`${k.name}: ${fmt(k.value)} instructions, ${k.perMac} per multiply-accumulate, ${k.speed} versus naive`}
-              className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5 rounded-lg md:grid-cols-[13rem_1fr_3.5rem]"
+              aria-label={`${k.name}: ${shown} ${unit}, ${k.tip}`}
+              className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5 rounded-lg md:grid-cols-[13rem_1fr_var(--tag)]"
             >
               <div className="text-sm text-fg-2">{k.name}</div>
-              <div className="text-right text-base font-semibold text-white md:order-last">{k.speed}</div>
+              <div className="text-right text-base font-semibold whitespace-nowrap text-white md:order-last">{k.tag}</div>
               <div className="relative col-span-2 h-6 md:col-span-1">
-                {barTicks.map((t) => (
-                  <span key={t} className="absolute inset-y-0 w-px bg-white/[0.07]" style={{ left: `${(t / BAR_MAX) * 100}%` }} />
+                {ticks.map((t) => (
+                  <span key={t} className="absolute inset-y-0 w-px bg-white/[0.07]" style={{ left: `${(t / max) * 100}%` }} />
                 ))}
                 <div
                   className="absolute inset-y-0 left-0 rounded-r-[4px] bg-bar transition-[width,filter] duration-[1200ms] ease-out"
@@ -368,54 +386,84 @@ export function InstructionBars() {
                     transitionDelay: `${900 + i * 140}ms`,
                   }}
                 >
-                  {fmt(k.value)}
+                  {shown}
                 </span>
                 {hover === i && (
                   <Tip x={w / 2}>
-                    <div className="text-sm font-semibold text-white">{fmt(k.value)} instructions</div>
-                    <div className="text-fg-2">
-                      {k.perMac} per multiply-accumulate · {k.speed} vs naive
+                    <div className="text-sm font-semibold text-white">
+                      {shown} {unit}
                     </div>
+                    <div className="text-fg-2">{k.tip}</div>
                   </Tip>
                 )}
               </div>
             </div>
           )
         })}
-        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-[13rem_1fr_3.5rem]">
+        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-[13rem_1fr_var(--tag)]">
           <span className="hidden md:block" />
           <div className="relative h-5 border-t border-white/10">
-            {barTicks.map((t) => (
-              <span key={t} className="absolute top-1 -translate-x-1/2 font-mono text-[10.5px] text-fg-3 tabular-nums" style={{ left: `${(t / BAR_MAX) * 100}%` }}>
-                {t === 0 ? '0' : `${t / 1000}K`}
+            {ticks.map((t) => (
+              <span key={t} className="absolute top-1 -translate-x-1/2 font-mono text-[10.5px] text-fg-3 tabular-nums" style={{ left: `${(t / max) * 100}%` }}>
+                {tickLabel(t)}
               </span>
             ))}
           </div>
         </div>
       </div>
-      <TableToggle label="the kernel numbers">
+      <TableToggle label={tableLabel}>
         <table className="w-full text-xs">
           <thead className="bg-white/[0.03]">
             <tr>
-              <th className={th}>Kernel</th>
-              <th className={th}>Instructions / inference</th>
-              <th className={th}>Per MAC</th>
-              <th className={th}>vs naive</th>
+              {tableHead.map((h) => (
+                <th key={h} className={th}>
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {kernels.map((k) => (
+            {rows.map((k) => (
               <tr key={k.name} className="border-t border-white/5">
                 <td className={td}>{k.name}</td>
-                <td className={td}>{fmt(k.value)}</td>
-                <td className={td}>{k.perMac}</td>
-                <td className={td}>{k.speed}</td>
+                {k.cells.map((c, ci) => (
+                  <td key={ci} className={td}>
+                    {c}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>
         </table>
       </TableToggle>
     </figure>
+  )
+}
+
+export function InstructionBars() {
+  const kernels = [
+    { name: 'Naive C (reference)', value: 1151529, perMac: 13.67, speed: '1.00×' },
+    { name: 'DSP SIMD (SMLAD, SXTB16)', value: 479357, perMac: 5.69, speed: '2.40×' },
+    { name: 'SIMD + 2×2 register tiling', value: 280089, perMac: 3.32, speed: '4.11×' },
+  ]
+  return (
+    <HBarChart
+      title="Instructions executed per CNN inference"
+      note="Counted exactly in QEMU with -icount. Fewer is faster."
+      rows={kernels.map((k) => ({
+        name: k.name,
+        value: k.value,
+        tag: k.speed,
+        tip: `${k.perMac} per multiply-accumulate · ${k.speed} vs naive`,
+        cells: [fmt(k.value), String(k.perMac), k.speed],
+      }))}
+      max={1450000}
+      ticks={[0, 400000, 800000, 1200000]}
+      tickLabel={(t) => (t === 0 ? '0' : `${t / 1000}K`)}
+      unit="instructions"
+      tableLabel="the kernel numbers"
+      tableHead={['Kernel', 'Instructions / inference', 'Per MAC', 'vs naive']}
+    />
   )
 }
 
