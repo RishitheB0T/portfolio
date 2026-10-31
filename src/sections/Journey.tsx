@@ -18,7 +18,7 @@ const steps: { when: string; title: string; body: ReactNode; icon: ReactNode; no
   {
     when: 'September 2026',
     title: 'Shipping software: placement-prep',
-    body: 'From an empty folder on Sep 11 to a four-role platform with AI resume feedback, a tool-calling assistant, RAG search and 315 tests.',
+    body: 'From an empty folder on Sep 11 to a four-role platform with AI resume feedback, a streaming tool-calling assistant, hybrid RAG search and 342 tests.',
     icon: <Rocket />,
   },
   {

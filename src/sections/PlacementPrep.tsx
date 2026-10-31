@@ -128,10 +128,10 @@ const features: { icon: ReactNode; title: string; body: ReactNode }[] = [
   { icon: <ClipboardList />, title: 'Applications, end to end', body: <>Apply, withdraw and follow every application from <b>applied → shortlisted → selected</b>. The hiring side leaves notes, sees live counts and exports CSV.</> },
   { icon: <BellRing />, title: 'Never miss a deadline', body: <>A scheduled job sends new-drive alerts and reminders <b>3 days and 1 day</b> before a drive closes, only to eligible students who have not applied.</> },
   { icon: <FileText />, title: 'AI resume feedback', body: <>Upload a PDF against a drive: <b>Claude reads it natively</b> and returns a score, strengths and fixes, judged against passages retrieved from that drive’s job description.</> },
-  { icon: <Bot />, title: 'An assistant that acts', body: <>Ask in plain English. Through <b>Spring AI @Tool calling</b> the model invokes real backend methods, under the same rules as the buttons.</> },
-  { icon: <Search />, title: 'Search by meaning (RAG)', body: <>Job-description PDFs are split, embedded by a <b>local model</b> and stored in pgvector. “Data pipelines with Spark” finds the right job with no word in common, and no API key.</> },
+  { icon: <Bot />, title: 'An assistant that acts', body: <>Ask in plain English. Through <b>Spring AI @Tool calling</b> the model invokes real backend methods, under the same rules as the buttons, and the reply <b>streams in word by word</b>.</> },
+  { icon: <Search />, title: 'Search by meaning and by words', body: <>Job-description PDFs are embedded by a <b>local model</b> into pgvector, and a <b>hybrid search</b> adds PostgreSQL full-text matches. “Data pipelines with Spark” finds the right job with no word in common, and no API key.</> },
   { icon: <ShieldCheck />, title: 'Four roles, enforced twice', body: <>Student, coordinator, recruiter, admin. JWT auth with role rules in the security filter chain, <b>plus row-level ownership</b>.</> },
-  { icon: <Blocks />, title: 'Built to be trusted', body: <>Flyway-owned schema, validation that mirrors every column, RFC 9457 errors, <b>226 backend tests on real PostgreSQL + pgvector</b>.</> },
+  { icon: <Blocks />, title: 'Built to be trusted', body: <>Flyway-owned schema, validation that mirrors every column, RFC 9457 errors, <b>243 backend tests on real PostgreSQL + pgvector</b>.</> },
   { icon: <Container />, title: 'One command to run', body: <><span className="font-mono text-[12.5px]">docker compose --profile app up</span> starts PostgreSQL, the API and the nginx-served React app together.</> },
 ]
 
@@ -201,7 +201,7 @@ function Architecture() {
           </div>
         </div>
         <Conn />
-        <DiagramNode icon={<Database />} title="PostgreSQL 16" lines={['+ pgvector', '15 Flyway migrations']} color="from-indigo-400 to-violet-600" />
+        <DiagramNode icon={<Database />} title="PostgreSQL 16" lines={['+ pgvector', '16 Flyway migrations']} color="from-indigo-400 to-violet-600" />
       </div>
       <div className="md:grid md:grid-cols-[1fr_44px_0.9fr_44px_2.3fr_44px_1fr]">
         <div className="flex flex-col items-center md:col-start-5">
@@ -222,8 +222,8 @@ const ragSteps = [
   { icon: <FileText />, title: 'Job-description PDF', sub: 'read with PDFBox' },
   { icon: <Scissors />, title: 'Split', sub: '~200-token passages' },
   { icon: <Cpu />, title: 'Embed locally', sub: 'all-MiniLM-L6-v2 · 384-dim · inside the JVM' },
-  { icon: <Database />, title: 'pgvector', sub: 'HNSW index · cosine distance' },
-  { icon: <Search />, title: 'Retrieve', sub: 'question embedded the same way; nearest passages' },
+  { icon: <Database />, title: 'Two indexes', sub: 'pgvector HNSW for meaning · PostgreSQL full-text for words' },
+  { icon: <Search />, title: 'Rank fusion', sub: 'both result lists merged by reciprocal rank fusion' },
   { icon: <Sparkles />, title: 'Generate', sub: 'Claude answers and reviews from real passages' },
 ]
 
@@ -292,7 +292,7 @@ function ChatDemo() {
           </span>
           <div>
             <div className="text-sm font-semibold">Placement assistant</div>
-            <div className="text-[11px] text-fg-3">5 tools · bound to the signed-in student</div>
+            <div className="text-[11px] text-fg-3">5 tools · replies stream over SSE</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -347,6 +347,7 @@ const highlights = [
   { icon: <Layers />, title: 'Controllers speak HTTP, services speak the domain', body: 'Services return Optional or throw a reason-carrying exception, so scheduled jobs reuse them untouched.' },
   { icon: <ShieldCheck />, title: 'Two layers of access control', body: 'Role rules in the filter chain answer 403; ownership lookups answer 404, so nobody can confirm another person’s records exist.' },
   { icon: <Inbox />, title: 'A database table as a job queue', body: 'Resume reviews survive restarts with no message broker, and no connection is held during the slow model call.' },
+  { icon: <Cpu />, title: 'Java 21 virtual threads', body: 'Every request runs on one, so slow model calls cannot use up a thread pool; scheduled jobs keep a small pool of their own.' },
   { icon: <RotateCcw />, title: 'At-most-once reminders', body: 'A partial unique index makes “never send the same reminder twice” a database rule, not a hope.' },
 ]
 
@@ -356,8 +357,8 @@ const shipped = [
   'Four roles with JWT, recruiter scoping, admin tools',
   'Notifications and deadline reminders',
   'AI resume feedback grounded in the job description',
-  'AI assistant with tool calling',
-  'Semantic search over job descriptions (RAG, pgvector)',
+  'AI assistant with tool calling, streamed replies and an evaluation set',
+  'Hybrid search over job descriptions (pgvector + full-text, rank fusion)',
   'Docker images and CI',
 ]
 const next = ['Company-wise AI mock interviews', 'Q&A over placement notices, with sources', 'Email delivery for reminders and password reset']
@@ -380,11 +381,11 @@ export function PlacementPrep() {
           { href: 'https://github.com/RishitheB0T/placement-prep/blob/main/docs/API.md', label: 'API reference' },
         ]}
         stats={[
-          { value: 315, label: 'tests passing', note: '226 backend · 89 frontend' },
-          { value: 35, label: 'REST endpoints' },
+          { value: 342, label: 'tests passing', note: '243 backend · 99 frontend' },
+          { value: 36, label: 'REST endpoints' },
           { value: 4, label: 'roles' },
-          { value: 85, label: 'Postman requests', note: '114 assertions' },
-          { value: 15, label: 'Flyway migrations' },
+          { value: 87, label: 'Postman requests', note: '117 assertions' },
+          { value: 16, label: 'Flyway migrations' },
           { value: 0, label: 'lint warnings', note: 'oxlint' },
         ]}
       >
@@ -434,7 +435,7 @@ export function PlacementPrep() {
         <Reveal>
           <Architecture />
         </Reveal>
-        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {highlights.map((h, i) => (
             <Reveal key={h.title} delay={i * 70}>
               <div className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
@@ -448,7 +449,7 @@ export function PlacementPrep() {
       </div>
 
       <div className="mt-24">
-        <SubHeading kicker="AI and RAG" title="Answers grounded in the real job description" sub="Retrieval finds the right passages by meaning; generation puts them in front of Claude. Embeddings are computed locally, so search works without any API key." />
+        <SubHeading kicker="AI and RAG" title="Answers grounded in the real job description" sub="Retrieval finds the right passages by meaning and by exact words; generation puts them in front of Claude. Embeddings are computed locally, so search works without any API key." />
         <RagPipeline />
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.1fr]">
           <Reveal>
@@ -467,7 +468,7 @@ export function PlacementPrep() {
                   ['allDrives()', 'the whole board, eligible or not'],
                   ['myApplications()', 'company, role and current status'],
                   ['applyToDrive(driveId)', 'only when the student clearly asks'],
-                  ['searchJobDescriptions(query)', 'RAG search by meaning'],
+                  ['searchJobDescriptions(query)', 'hybrid search: meaning + words'],
                 ].map(([sig, what]) => (
                   <li key={sig} className="flex flex-col gap-0.5 rounded-xl bg-white/[0.03] px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                     <code className="font-mono text-[12.5px] text-emerald-300">{sig}</code>
@@ -478,6 +479,11 @@ export function PlacementPrep() {
               <div className="mt-5 rounded-2xl border border-white/[0.07] bg-ink-900/60 p-4 text-sm leading-relaxed text-fg-2">
                 <b className="text-white">Structured output.</b> The resume review comes back as JSON parsed straight into a Java
                 record (score, summary, strengths, improvements), with the score clamped to 0–100. Reviews run in a background queue.
+              </div>
+              <div className="mt-3 rounded-2xl border border-white/[0.07] bg-ink-900/60 p-4 text-sm leading-relaxed text-fg-2">
+                <b className="text-white">Streaming and evaluation.</b> Replies stream as Server-Sent Events while Claude writes them,
+                tool calls included, and each reply lists the tools it used. An evaluation set of 11 messages scores tool choice
+                against an 80% pass rate (never applying when only asked); a second checks that resume scores are consistent.
               </div>
             </div>
           </Reveal>
@@ -510,10 +516,10 @@ export function PlacementPrep() {
             <h5 className="font-display text-lg font-semibold">Quality, measured</h5>
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
               {[
-                ['226', 'backend tests', 'real PostgreSQL + pgvector via Testcontainers, real signed JWTs'],
-                ['89', 'frontend tests', 'Vitest + Testing Library: every role sees exactly its controls'],
-                ['114', 'Postman assertions', 'each restricted endpoint called by a role that may, and one that may not'],
-                ['CI', 'on every push', 'GitHub Actions builds and tests backend and frontend'],
+                ['243', 'backend tests', 'real PostgreSQL + pgvector via Testcontainers, real signed JWTs'],
+                ['99', 'frontend tests', 'Vitest + Testing Library: every role sees exactly its controls'],
+                ['117', 'Postman assertions', 'each restricted endpoint called by a role that may, and one that may not'],
+                ['11', 'AI evaluation cases', 'tool choice at an 80% pass rate, plus resume-score consistency, against the real model'],
               ].map(([v, k, d]) => (
                 <div key={k} className="rounded-2xl bg-white/[0.03] p-4">
                   <div className="text-2xl font-semibold text-white">{v}</div>
@@ -522,7 +528,7 @@ export function PlacementPrep() {
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-xs text-fg-3">The AI tool-calling loop is tested against a fake Anthropic server.</p>
+            <p className="mt-4 text-xs text-fg-3">CI builds and tests backend and frontend on every push. The tool-calling loop, streamed and not, is tested against a fake Anthropic server.</p>
           </div>
         </Reveal>
       </div>
@@ -530,7 +536,7 @@ export function PlacementPrep() {
       <Reveal className="mt-8">
         <TechRow
           items={[
-            { name: 'Java 21', icon: 'java' },
+            { name: 'Java 21 (virtual threads)', icon: 'java' },
             { name: 'Spring Boot 4.1', icon: 'spring' },
             { name: 'Spring Security 7 + JWT', icon: 'spring' },
             { name: 'Spring AI 2.0', icon: 'claude' },

@@ -94,7 +94,7 @@ function HeroCollage() {
           <div className="animate-float flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-300" />
             <span>
-              <b>315</b> tests passing
+              <b>342</b> tests passing
             </span>
           </div>
         </div>
