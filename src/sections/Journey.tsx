@@ -23,14 +23,14 @@ const steps: { when: string; title: string; body: ReactNode; icon: ReactNode; no
   },
   {
     when: 'October 2026',
-    title: 'product-catalog-service and kestrel-rtos',
-    body: 'A measured, documented Spring Boot + MySQL + Redis backend in 16 phases, and a from-scratch RTOS with an int8 NN runtime. RL-PID with Team Viper in parallel.',
+    title: 'product-catalog-service, kestrel-rtos and RL_PID',
+    body: 'A measured, documented Spring Boot + MySQL + Redis backend with a React storefront, a from-scratch RTOS with an int8 NN runtime, and RL_PID: a PPO-tuned PID that beats the published agent.',
     icon: <Cpu />,
   },
   {
     when: 'Now',
     title: 'Placement season 2026–27',
-    body: 'Open to software engineering roles. Next up: AI mock interviews, k6 benchmarks, real-board cycle counts and the PPO agent.',
+    body: 'Open to software engineering roles. Next up: AI mock interviews, the catalog’s admin views, and running kestrel and RL_PID on a real STM32 board.',
     icon: <Sparkles />,
     now: true,
   },

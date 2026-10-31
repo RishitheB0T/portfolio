@@ -47,6 +47,12 @@ export function About() {
               </div>
               <h3 className="mt-5 text-xl font-semibold">{education.degree}</h3>
               <p className="mt-1 text-sm text-fg-2">{education.school}</p>
+              <a
+                href="#rl-pid"
+                className="mt-5 inline-flex items-center gap-2 rounded-2xl border border-rose-300/20 bg-gradient-to-r from-rose-400/15 to-fuchsia-500/10 px-4 py-2.5 text-sm text-fg-2 transition hover:border-rose-300/40 hover:text-white"
+              >
+                Final-year project: <b className="font-mono text-white">RL_PID</b>, a PPO-tuned PID controller <ArrowRight className="size-3.5" />
+              </a>
             </Spotlight>
           </Reveal>
 
