@@ -38,6 +38,59 @@ function RoleTyper() {
   )
 }
 
+function Portrait() {
+  return (
+    <div className="relative size-24 shrink-0 md:size-28">
+      <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-violet-600/50 via-fuchsia-500/35 to-cyan-400/45 blur-2xl" />
+      <div
+        className="absolute -inset-[3px] rounded-full bg-[conic-gradient(from_0deg,#8b5cf6,#d946ef,#22d3ee,#34d399,#8b5cf6)]"
+        style={{ animation: 'spin 6s linear infinite' }}
+      />
+      <img
+        src="./images/portrait.webp"
+        alt="Rishikesh Kallapally"
+        width={420}
+        height={420}
+        fetchPriority="high"
+        className="relative size-full rounded-full border-[3px] border-ink-950 object-cover"
+      />
+    </div>
+  )
+}
+
+function QuoteBubble() {
+  const reduced = useReducedMotion()
+  const [i, setI] = useState(0)
+  const [shown, setShown] = useState(true)
+  useEffect(() => {
+    if (reduced) return
+    let swap: number
+    const t = window.setInterval(() => {
+      setShown(false)
+      swap = window.setTimeout(() => {
+        setI((x) => (x + 1) % profile.quips.length)
+        setShown(true)
+      }, 300)
+    }, 3600)
+    return () => {
+      window.clearInterval(t)
+      window.clearTimeout(swap)
+    }
+  }, [reduced])
+  return (
+    <div className="relative w-fit rounded-2xl rounded-bl-sm border border-white/10 bg-ink-800/90 px-4 py-2.5 shadow-lg shadow-black/30">
+      <span
+        className="block font-mono text-[12.5px] text-fg transition-opacity duration-300 md:text-[13.5px]"
+        style={{ opacity: shown ? 1 : 0 }}
+      >
+        <span className="text-fuchsia-300">“</span>
+        {profile.quips[i]}
+        <span className="text-fuchsia-300">”</span>
+      </span>
+    </div>
+  )
+}
+
 function HeroCollage() {
   const ref = useRef<HTMLDivElement>(null)
   const reduced = useReducedMotion()
@@ -127,11 +180,27 @@ export function Hero() {
 
       <div className="relative mx-auto grid grid-cols-1 max-w-7xl items-center gap-16 px-4 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
         <div style={{ animation: 'rise .9s both' }}>
+          <div className="flex items-center gap-5">
+            <Portrait />
+            <div className="min-w-0 space-y-3">
+              <QuoteBubble />
+              <a
+                href="#contact"
+                className="glass frost hidden items-center gap-2.5 rounded-full px-3.5 py-1.5 text-xs font-medium text-fg-2 transition hover:text-white sm:inline-flex"
+              >
+                <span className="relative flex size-2 shrink-0">
+                  <span className="absolute inset-0 rounded-full bg-emerald-400" style={{ animation: 'ping-soft 1.8s infinite' }} />
+                  <span className="relative size-2 rounded-full bg-emerald-400" />
+                </span>
+                {profile.availability}
+              </a>
+            </div>
+          </div>
           <a
             href="#contact"
-            className="glass frost inline-flex items-center gap-2.5 rounded-full px-3.5 py-1.5 text-xs font-medium text-fg-2 transition hover:text-white"
+            className="glass frost mt-5 inline-flex items-center gap-2.5 rounded-full px-3.5 py-1.5 text-xs font-medium text-fg-2 transition hover:text-white sm:hidden"
           >
-            <span className="relative flex size-2">
+            <span className="relative flex size-2 shrink-0">
               <span className="absolute inset-0 rounded-full bg-emerald-400" style={{ animation: 'ping-soft 1.8s infinite' }} />
               <span className="relative size-2 rounded-full bg-emerald-400" />
             </span>

@@ -6,12 +6,17 @@ export const profile = {
   lastName: 'Kallapally',
   handle: 'RishitheB0T',
   tagline: 'Building ideas into working systems.',
-  // The hero types these one after another after "I build".
+  // The hero types these one after another after "I build" (the same lines as the GitHub profile header).
   roles: [
-    'backends that prove their numbers.',
-    'full-stack apps with applied AI.',
-    'firmware down to the registers.',
+    'Spring Boot APIs.',
+    'full-stack React apps.',
+    'LLM tools in Java.',
+    'caches, then measure them.',
+    'a tiny RTOS from scratch.',
+    'a tiny language model from scratch.',
   ],
+  // The speech bubble next to the photo cycles through these.
+  quips: ['it works on my machine', 'git commit final_v2_FINAL', 'talk is cheap, show me the code', 'sleep(0), placement season'],
   intro:
     'EIE undergrad at NIT Silchar, class of 2027. Java and Spring Boot first, React and TypeScript on top, and C with Thumb-2 assembly when the hardware calls. I measure what I build and write down why.',
   availability: 'Open to software engineering roles · placement season 2026–27',
