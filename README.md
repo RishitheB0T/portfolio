@@ -14,15 +14,16 @@ behind it. Built with the same frontend stack I use in my projects: **React 19, 
 | Hero | Name, typing role line, a 3D-tilting collage of real screenshots, a pointer-reactive particle field, headline numbers |
 | 01 · whoami | A typing terminal, education, EdgeMind, what I'm building now, how I work |
 | 02 · Contributions | Tests, commits, lines of code and docs counted from the repos, with breakdowns by language and by repo |
-| 03 · Featured builds | Deep dives into [placement-prep](https://github.com/RishitheB0T/placement-prep), [product-catalog-service](https://github.com/RishitheB0T/product-catalog-service) and [kestrel-rtos](https://github.com/RishitheB0T/kestrel-rtos) |
-| 04 · Research & team work | EdgeMind (STM32F407 vibration fault detection) and the RL-PID controller (Team Viper) |
+| 03 · Featured builds | Deep dives into [placement-prep](https://github.com/RishitheB0T/placement-prep), [product-catalog-service](https://github.com/RishitheB0T/product-catalog-service), [kestrel-rtos](https://github.com/RishitheB0T/kestrel-rtos) and [RL_PID](https://github.com/RishitheB0T/RL_PID) |
+| 04 · Edge ML | EdgeMind: vibration fault detection on an STM32F407 |
 | 05 · Journey | An animated timeline from 2023 to placement season |
 | 06 · Stack | Five layers of tools; pick a project to light up the tools it uses |
 | 07 · Contact | Links, with empty ones hidden automatically |
 
 Interactive pieces: an auto-playing screenshot gallery with a full-screen lightbox, an animated architecture diagram, a
-replay of the AI assistant's tool calls, a log-scale query benchmark chart, an animated Redis cache-flow diagram, a
-replay of the RTOS shell, the kernel's priority-inversion trace, and a command palette (press <kbd>Ctrl</kbd>+<kbd>K</kbd>
+replay of the AI assistant's tool calls, a log-scale query benchmark chart, k6 load-test charts, the storefront on
+desktop and phone, an animated Redis cache-flow diagram, a replay of the RTOS shell, the kernel's priority-inversion
+trace, the RL_PID agent's live demo with its results against the published agent, and a command palette (press <kbd>Ctrl</kbd>+<kbd>K</kbd>
 or <kbd>⌘</kbd>+<kbd>K</kbd>).
 
 Every number on the page comes from the project repositories. Charts have hover and keyboard tooltips and a "view as
