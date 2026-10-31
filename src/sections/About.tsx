@@ -1,5 +1,5 @@
-import { ArrowRight, Award, FlaskConical, GraduationCap } from 'lucide-react'
-import { education, now, principles, research } from '../data/profile'
+import { Activity, ArrowRight, GraduationCap } from 'lucide-react'
+import { edgemind, education, now, principles } from '../data/profile'
 import { Reveal, SectionHeading, Spotlight } from '../components/ui'
 import { TypedTerminal, type TermLine } from '../components/TypedTerminal'
 
@@ -11,8 +11,8 @@ const whoami: TermLine[] = [
   { kind: 'out', text: 'frontend    React 19 · TypeScript · Vite · Tailwind CSS · Vitest' },
   { kind: 'out', text: 'data + AI   PostgreSQL/pgvector · MySQL · Redis · Spring AI · RAG' },
   { kind: 'out', text: 'embedded    C · Thumb-2 assembly · Cortex-M4 (STM32F4) · CMSIS-DSP' },
-  { kind: 'cmd', text: 'ls ~/achievements' },
-  { kind: 'out', text: 'department-rank-2.txt   sn-bose-research-intern-2026.md   446-tests-passing.log', tone: 'ok' },
+  { kind: 'cmd', text: 'ls ~/projects' },
+  { kind: 'out', text: 'placement-prep/  product-catalog-service/  kestrel-rtos/  RL_PID/  edgemind/', tone: 'ok' },
   { kind: 'cmd', text: 'echo $STATUS' },
   { kind: 'out', text: 'open to software engineering roles · placement season 2026–27', tone: 'warn' },
 ]
@@ -47,27 +47,20 @@ export function About() {
               </div>
               <h3 className="mt-5 text-xl font-semibold">{education.degree}</h3>
               <p className="mt-1 text-sm text-fg-2">{education.school}</p>
-              <div className="mt-5 inline-flex items-center gap-3 rounded-2xl border border-amber-300/20 bg-gradient-to-r from-amber-400/15 to-fuchsia-500/10 px-4 py-2.5">
-                <Award className="size-5 text-amber-300" />
-                <span>
-                  <b className="text-white">{education.highlight}</b>
-                  <span className="text-sm text-fg-2"> {education.highlightNote}</span>
-                </span>
-              </div>
             </Spotlight>
           </Reveal>
 
           <Reveal delay={160}>
             <Spotlight className="h-full p-6" style={{ ['--accent' as string]: '#38bdf8' }}>
               <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-500 shadow-lg shadow-sky-500/30">
-                <FlaskConical className="size-5 text-white" />
+                <Activity className="size-5 text-white" />
               </div>
-              <h3 className="mt-5 text-lg leading-snug font-semibold">{research.title}</h3>
+              <h3 className="mt-5 text-lg leading-snug font-semibold">{edgemind.title}</h3>
               <p className="mt-1 text-sm text-fg-2">
-                {research.where} · {research.when}
+                {edgemind.what} · {edgemind.when}
               </p>
               <a href="#research" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-sky-300 hover:text-sky-200">
-                Built EdgeMind <ArrowRight className="size-3.5" />
+                See how it works <ArrowRight className="size-3.5" />
               </a>
             </Spotlight>
           </Reveal>

@@ -181,13 +181,12 @@ export function Hero() {
           { v: totals.tests.value, label: 'automated tests across 3 repos', suffix: '' },
           { v: 483, label: 'fastest measured query speed-up', suffix: '×' },
           { v: 4.11, label: 'fewer instructions with SIMD kernels', suffix: '×', d: 2 },
-          { v: 2, label: 'department rank, EIE · NIT Silchar', prefix: '#' },
+          { v: 4, label: 'control metrics where RL_PID beats the published agent', suffix: '/4' },
         ].map((s, i) => (
           <div key={i} className="glass rounded-2xl p-4 md:p-5" style={{ animation: `rise .8s ${0.3 + i * 0.08}s both` }}>
             <Counter
               value={s.v}
               decimals={s.d ?? 0}
-              prefix={s.prefix}
               suffix={s.suffix}
               className="text-gradient block text-3xl font-semibold tracking-tight md:text-4xl"
             />

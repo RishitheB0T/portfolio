@@ -123,14 +123,14 @@ export function Research() {
             Signals, control loops and <span className="text-gradient">ML on the edge.</span>
           </>
         }
-        sub="Work from the SN Bose research internship and a final-year team project. Their code isn’t public yet, so these cards describe the work rather than link to it."
+        sub="ML-based fault detection running on a microcontroller, and a final-year control-systems project."
       />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Reveal>
           <div className="glass gradient-border h-full rounded-3xl p-6 md:p-7" style={{ ['--accent' as string]: '#38bdf8', ['--accent-2' as string]: '#818cf8' }}>
             <div className="flex flex-wrap items-center gap-2">
-              <Chip>SN Bose Summer Research Internship 2026</Chip>
-              <Chip>NIT Silchar · May – July</Chip>
+              <Chip>May – July 2026</Chip>
+              <Chip>Edge ML · STM32F407</Chip>
             </div>
             <h3 className="mt-5 text-3xl font-bold">EdgeMind</h3>
             <p className="mt-2 text-lg text-fg">Vibration fault detection on an STM32F407.</p>

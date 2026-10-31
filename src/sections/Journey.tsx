@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Award, Cpu, FlaskConical, GraduationCap, Rocket, Sparkles } from 'lucide-react'
+import { Cpu, FlaskConical, GraduationCap, Rocket, Sparkles } from 'lucide-react'
 import { Reveal, SectionHeading } from '../components/ui'
 
 const steps: { when: string; title: string; body: ReactNode; icon: ReactNode; now?: boolean }[] = [
@@ -10,15 +10,9 @@ const steps: { when: string; title: string; body: ReactNode; icon: ReactNode; no
     icon: <GraduationCap />,
   },
   {
-    when: 'By the 6th semester',
-    title: 'Department Rank 2',
-    body: 'Second in the department, while building projects on the side.',
-    icon: <Award />,
-  },
-  {
     when: 'May – July 2026',
-    title: 'SN Bose Summer Research Intern',
-    body: 'At NIT Silchar. Built EdgeMind: vibration fault detection on an STM32F407 with a CMSIS-DSP FFT and a decision tree in bare-metal C.',
+    title: 'Started EdgeMind',
+    body: 'ML-based vibration fault detection on an STM32F407: a CMSIS-DSP FFT and a decision tree exported to bare-metal C.',
     icon: <FlaskConical />,
   },
   {

@@ -12,7 +12,7 @@ behind it. Built with the same frontend stack I use in my projects: **React 19, 
 | Section | What it shows |
 |---|---|
 | Hero | Name, typing role line, a 3D-tilting collage of real screenshots, a pointer-reactive particle field, headline numbers |
-| 01 · whoami | A typing terminal, education (Department Rank 2), the SN Bose research internship, what I'm building now, how I work |
+| 01 · whoami | A typing terminal, education, EdgeMind, what I'm building now, how I work |
 | 02 · Contributions | Tests, commits, lines of code and docs counted from the repos, with breakdowns by language and by repo |
 | 03 · Featured builds | Deep dives into [placement-prep](https://github.com/RishitheB0T/placement-prep), [product-catalog-service](https://github.com/RishitheB0T/product-catalog-service) and [kestrel-rtos](https://github.com/RishitheB0T/kestrel-rtos) |
 | 04 · Research & team work | EdgeMind (STM32F407 vibration fault detection) and the RL-PID controller (Team Viper) |

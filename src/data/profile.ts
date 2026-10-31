@@ -31,15 +31,12 @@ export const education = {
   degree: 'B.Tech, Electronics & Instrumentation Engineering',
   school: 'National Institute of Technology Silchar',
   years: '2023 – 2027',
-  highlight: 'Department Rank 2',
-  highlightNote: 'by the 6th semester',
 }
 
-export const research = {
-  title: 'SN Bose Summer Research Intern',
-  where: 'NIT Silchar',
+export const edgemind = {
+  title: 'EdgeMind',
+  what: 'ML-based vibration fault detection on an STM32',
   when: 'May – July 2026',
-  built: 'EdgeMind: vibration fault detection on an STM32F407',
 }
 
 // What is being built right now (from each project's roadmap).
