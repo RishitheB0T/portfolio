@@ -42,19 +42,19 @@ export const edgemind = {
 // What is being built right now (from each project's roadmap).
 export const now = [
   { project: 'placement-prep', next: 'Adding company-wise AI mock interviews' },
-  { project: 'product-catalog', next: 'Phase 11: k6 benchmarks and a performance report' },
+  { project: 'product-catalog', next: 'Phase 13: product detail view, local admin and accessibility' },
   { project: 'kestrel-rtos', next: 'Real-board cycle counts on an STM32F4' },
-  { project: 'rl-pid', next: 'Training a PPO agent from scratch for an STM32' },
+  { project: 'RL_PID', next: 'Running the controller on a real STM32F407 board' },
 ]
 
 export const principles = [
   {
     title: 'Design the flow',
-    body: 'Plan in phases, diagram every request path, and record each decision with its trade-off. One repo alone has 47 written decisions.',
+    body: 'Plan in phases, diagram every request path, and record each decision with its trade-off. One repo alone has 53 written decisions.',
   },
   {
     title: 'Build the system',
-    body: 'From an empty folder: schema, API, security, UI, containers and CI. No starter kits, no vendor HAL on the firmware side.',
+    body: 'From an empty folder: schema, API, security, UI, containers and CI. No starter kits, and no vendor HAL or libc in the RTOS.',
   },
   {
     title: 'Show the evidence',
@@ -64,21 +64,22 @@ export const principles = [
 
 // Counted from the public repositories (October 2026).
 export const totals = {
-  tests: { value: 446, parts: [315, 107, 24] },
-  commits: 105,
-  linesOfCode: 27809,
-  docsLines: 6006,
-  endpoints: 35,
-  decisions: 47,
+  tests: { value: 502, parts: [342, 125, 24, 11] },
+  commits: 162,
+  linesOfCode: 33134,
+  docsLines: 7667,
+  endpoints: 36,
+  decisions: 53,
 }
 
-// Lines of code by language across placement-prep, product-catalog-service and kestrel-rtos
-// (source and tests; generated model files and lockfiles excluded).
+// Lines of code by language across placement-prep, product-catalog-service, kestrel-rtos and RL_PID
+// (source and tests; generated model files, vendor config headers and lockfiles excluded).
 export const languages = [
-  { name: 'Java', lines: 14780, color: '#3987e5' },
-  { name: 'TypeScript', lines: 7208, color: '#d95926' },
-  { name: 'C', lines: 4190, color: '#199e70' },
-  { name: 'Python', lines: 905, color: '#c98500' },
-  { name: 'SQL', lines: 528, color: '#d55181' },
-  { name: 'Assembly', lines: 198, color: '#008300' },
+  { name: 'Java', lines: 16170, color: '#3987e5' },
+  { name: 'TypeScript', lines: 7604, color: '#d95926' },
+  { name: 'C', lines: 4715, color: '#199e70' },
+  { name: 'Python', lines: 2337, color: '#c98500' },
+  { name: 'JavaScript', lines: 1566, color: '#d55181' },
+  { name: 'SQL', lines: 544, color: '#008300' },
+  { name: 'Assembly', lines: 198, color: '#9085e9' },
 ]
