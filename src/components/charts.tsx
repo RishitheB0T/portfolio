@@ -659,3 +659,130 @@ export function PriorityTrace() {
     </figure>
   )
 }
+
+/* ---------- paired bars: baseline vs mine, one small panel per metric ---------- */
+
+type PairMetric = { name: string; unit: string; a: number; b: number; digits: number }
+
+export function PairedBars({
+  title,
+  note,
+  labels,
+  metrics,
+  tableLabel,
+}: {
+  title: string
+  note: string
+  labels: [string, string]
+  metrics: PairMetric[]
+  tableLabel: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref)
+  const [hover, setHover] = useState<number | null>(null)
+  const show = (v: number, m: PairMetric) => `${v.toFixed(m.digits)}${m.unit}`
+  const change = (m: PairMetric) => ((m.b - m.a) / m.a) * 100
+  const colors = ['var(--color-series-before)', 'var(--color-series-after)']
+
+  return (
+    <figure ref={ref}>
+      <figcaption className="mb-4">
+        <div className="text-sm font-medium text-fg">{title}</div>
+        <div className="text-xs text-fg-3">{note}</div>
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-fg-2">
+          {labels.map((l, i) => (
+            <span key={l} className="flex items-center gap-1.5">
+              <span className="h-2.5 w-4 rounded-[3px]" style={{ background: colors[i] }} /> {l}
+            </span>
+          ))}
+        </div>
+      </figcaption>
+      <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+        {metrics.map((m, mi) => {
+          const max = Math.max(m.a, m.b) * 1.3
+          const c = change(m)
+          return (
+            <div
+              key={m.name}
+              tabIndex={0}
+              onMouseEnter={() => setHover(mi)}
+              onMouseLeave={() => setHover(null)}
+              onFocus={() => setHover(mi)}
+              onBlur={() => setHover(null)}
+              aria-label={`${m.name}: ${labels[0]} ${show(m.a, m)}, ${labels[1]} ${show(m.b, m)}, ${c.toFixed(1)}%`}
+              className="relative rounded-xl p-1"
+            >
+              <div className="mb-1.5 flex items-baseline justify-between gap-2 text-xs">
+                <span className="font-medium text-fg">{m.name}</span>
+                <span className={c < 0 ? 'text-fg-2' : 'flex items-center gap-1 text-rose-200'}>
+                  {c >= 0 && <AlertTriangle className="size-3" />}
+                  {c < 0 ? '−' : '+'}
+                  {Math.abs(c).toFixed(1)}%
+                </span>
+              </div>
+              <div className="space-y-[2px]">
+                {[m.a, m.b].map((v, si) => {
+                  const w = (v / max) * 100
+                  return (
+                    <div key={si} className="relative h-3.5">
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-r-[4px] transition-[width,filter] duration-[1100ms] ease-out"
+                        style={{
+                          width: inView ? `${w}%` : '0%',
+                          background: colors[si],
+                          transitionDelay: `${mi * 90 + si * 120}ms`,
+                          filter: hover === mi ? 'brightness(1.2)' : undefined,
+                        }}
+                      />
+                      <span
+                        className="absolute top-1/2 -translate-y-1/2 pl-1.5 font-mono text-[10.5px] text-fg-2 tabular-nums transition-opacity duration-500"
+                        style={{ left: `${w}%`, opacity: inView ? 1 : 0, transitionDelay: `${700 + mi * 90}ms` }}
+                      >
+                        {show(v, m)}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+              {hover === mi && (
+                <Tip x={50}>
+                  <div className="text-sm font-semibold text-white">
+                    {show(m.a, m)} → {show(m.b, m)}
+                  </div>
+                  <div className="text-fg-2">
+                    {m.name}: {c < 0 ? `${Math.abs(c).toFixed(1)}% lower` : `${c.toFixed(1)}% higher`} · lower is better
+                  </div>
+                </Tip>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <TableToggle label={tableLabel}>
+        <table className="w-full text-xs">
+          <thead className="bg-white/[0.03]">
+            <tr>
+              <th className={th}>Metric</th>
+              <th className={th}>{labels[0]}</th>
+              <th className={th}>{labels[1]}</th>
+              <th className={th}>Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {metrics.map((m) => (
+              <tr key={m.name} className="border-t border-white/5">
+                <td className={td}>{m.name}</td>
+                <td className={td}>{show(m.a, m)}</td>
+                <td className={td}>{show(m.b, m)}</td>
+                <td className={td}>
+                  {change(m) < 0 ? '−' : '+'}
+                  {Math.abs(change(m)).toFixed(1)}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableToggle>
+    </figure>
+  )
+}
