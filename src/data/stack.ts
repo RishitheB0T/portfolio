@@ -5,7 +5,7 @@ export const projectNames: Record<ProjectKey, string> = {
   catalog: 'product-catalog',
   kestrel: 'kestrel-rtos',
   edgemind: 'EdgeMind',
-  rlpid: 'RL-PID',
+  rlpid: 'RL_PID',
 }
 
 export const projectColors: Record<ProjectKey, [string, string]> = {
@@ -67,13 +67,14 @@ export const layers: Layer[] = [
     name: 'Beyond the web',
     blurb: 'Bare-metal C, assembly and ML on microcontrollers.',
     items: [
-      { name: 'C (freestanding)', icon: 'c', usedIn: ['kestrel', 'edgemind'] },
+      { name: 'C', icon: 'c', usedIn: ['kestrel', 'edgemind', 'rlpid'] },
       { name: 'Thumb-2 assembly', usedIn: ['kestrel'] },
       { name: 'ARM Cortex-M4 / STM32F4', usedIn: ['kestrel', 'edgemind', 'rlpid'] },
       { name: 'CMSIS-DSP', usedIn: ['edgemind'] },
       { name: 'QEMU', usedIn: ['kestrel'] },
       { name: 'Python + NumPy', icon: 'numpy', usedIn: ['kestrel', 'edgemind', 'rlpid'] },
       { name: 'Reinforcement learning (PPO)', icon: 'python', usedIn: ['rlpid'] },
+      { name: 'PyTorch · Stable-Baselines3 · Gymnasium', usedIn: ['rlpid'] },
       { name: 'Control systems', usedIn: ['rlpid'] },
     ],
   },

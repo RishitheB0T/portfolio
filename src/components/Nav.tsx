@@ -7,7 +7,7 @@ export const sections = [
   { id: 'about', label: 'About' },
   { id: 'numbers', label: 'Numbers' },
   { id: 'builds', label: 'Builds' },
-  { id: 'research', label: 'Research' },
+  { id: 'research', label: 'EdgeMind' },
   { id: 'journey', label: 'Journey' },
   { id: 'stack', label: 'Stack' },
   { id: 'contact', label: 'Contact' },
@@ -139,13 +139,15 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
       { label: 'placement-prep: deep dive', hint: 'Project', go: go('placement-prep') },
       { label: 'product-catalog-service: deep dive', hint: 'Project', go: go('product-catalog') },
       { label: 'kestrel-rtos: deep dive', hint: 'Project', go: go('kestrel-rtos') },
-      { label: 'EdgeMind and RL-PID', hint: 'Project', go: go('research') },
+      { label: 'RL_PID: deep dive', hint: 'Project', go: go('rl-pid') },
+      { label: 'EdgeMind', hint: 'Project', go: go('research') },
       { label: 'GitHub profile', hint: 'Link', go: open(links.github) },
       ...(links.linkedin ? [{ label: 'LinkedIn', hint: 'Link', go: open(links.linkedin) }] : []),
       ...(links.email ? [{ label: `Email ${links.email}`, hint: 'Link', go: () => (window.location.href = `mailto:${links.email}`) }] : []),
       { label: 'placement-prep source', hint: 'Link', go: open('https://github.com/RishitheB0T/placement-prep') },
       { label: 'product-catalog-service source', hint: 'Link', go: open('https://github.com/RishitheB0T/product-catalog-service') },
       { label: 'kestrel-rtos source', hint: 'Link', go: open('https://github.com/RishitheB0T/kestrel-rtos') },
+      { label: 'RL_PID source', hint: 'Link', go: open('https://github.com/RishitheB0T/RL_PID') },
     ]
   }, [])
 

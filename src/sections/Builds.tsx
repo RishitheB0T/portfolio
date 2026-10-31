@@ -3,6 +3,7 @@ import { Reveal, SectionHeading } from '../components/ui'
 import { PlacementPrep } from './PlacementPrep'
 import { ProductCatalog } from './ProductCatalog'
 import { Kestrel } from './Kestrel'
+import { RlPid } from './RlPid'
 
 const cards = [
   {
@@ -25,6 +26,7 @@ const cards = [
     metricLabel: 'faster storefront query',
     grad: 'from-amber-300 via-orange-400 to-rose-500',
     glow: 'shadow-amber-500/20',
+    img: './images/catalog/storefront.webp',
   },
   {
     id: 'kestrel-rtos',
@@ -36,6 +38,17 @@ const cards = [
     grad: 'from-cyan-300 via-teal-400 to-emerald-400',
     glow: 'shadow-cyan-500/20',
   },
+  {
+    id: 'rl-pid',
+    name: 'RL_PID',
+    kind: 'Reinforcement learning + control',
+    line: 'A PPO agent that retunes a PID every 0.2 s to control an unstable process, ported to C for an STM32F407.',
+    metric: '4/4',
+    metricLabel: 'metrics better than the published agent',
+    grad: 'from-rose-300 via-pink-400 to-fuchsia-500',
+    glow: 'shadow-rose-500/20',
+    img: './images/rl-pid/demo-poster.webp',
+  },
 ]
 
 export function Builds() {
@@ -46,13 +59,13 @@ export function Builds() {
         eyebrow="Featured builds"
         title={
           <>
-            Three systems, <span className="text-gradient">built from an empty folder.</span>
+            Four systems, <span className="text-gradient">built from an empty folder.</span>
           </>
         }
-        sub="A full-stack platform with applied AI, a performance-focused backend, and an operating system for a microcontroller. Each one below is a deep dive: what it does, how it’s built, and the evidence."
+        sub="A full-stack platform with applied AI, a performance-focused backend, an operating system for a microcontroller, and a reinforcement-learning controller. Each one below is a deep dive: what it does, how it’s built, and the evidence."
       />
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {cards.map((c, i) => (
           <Reveal key={c.id} delay={i * 100}>
             <a href={`#${c.id}`} className={`group relative block h-full overflow-hidden rounded-3xl border border-white/10 bg-ink-900 p-6 shadow-2xl ${c.glow} transition duration-300 hover:-translate-y-1.5`}>
@@ -88,6 +101,8 @@ export function Builds() {
         <ProductCatalog />
         <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
         <Kestrel />
+        <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+        <RlPid />
       </div>
     </section>
   )
