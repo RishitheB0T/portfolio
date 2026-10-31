@@ -50,12 +50,13 @@ export const now = [
   { project: 'product-catalog', next: 'Phase 14: production containers and CI' },
   { project: 'kestrel-rtos', next: 'Real-board cycle counts on an STM32F4' },
   { project: 'RL_PID', next: 'Running the controller on a real STM32F407 board' },
+  { project: 'tiny-reasoner', next: 'Longer GRPO with a curriculum, and DAPO-style fixes' },
 ]
 
 export const principles = [
   {
     title: 'Design the flow',
-    body: 'Plan in phases, diagram every request path, and record each decision with its trade-off. One repo alone has 53 written decisions.',
+    body: 'Plan in phases, diagram every request path, and record each decision with its trade-off. One repo alone has 56 written decisions.',
   },
   {
     title: 'Build the system',
@@ -69,22 +70,22 @@ export const principles = [
 
 // Counted from the public repositories (October 2026).
 export const totals = {
-  tests: { value: 502, parts: [342, 125, 24, 11] },
-  commits: 162,
-  linesOfCode: 33134,
-  docsLines: 7667,
+  tests: { value: 567, parts: [342, 149, 24, 11, 41] },
+  commits: 180,
+  linesOfCode: 37627,
+  docsLines: 8854,
   endpoints: 36,
-  decisions: 53,
+  decisions: 56,
 }
 
-// Lines of code by language across placement-prep, product-catalog-service, kestrel-rtos and RL_PID
+// Lines of code by language across placement-prep, product-catalog-service, kestrel-rtos, RL_PID and tiny-reasoner
 // (source and tests; generated model files, vendor config headers and lockfiles excluded).
 export const languages = [
-  { name: 'Java', lines: 16170, color: '#3987e5' },
+  { name: 'Java', lines: 16227, color: '#3987e5' },
   { name: 'TypeScript', lines: 7604, color: '#d95926' },
   { name: 'C', lines: 4715, color: '#199e70' },
-  { name: 'Python', lines: 2337, color: '#c98500' },
-  { name: 'JavaScript', lines: 1566, color: '#d55181' },
+  { name: 'Python', lines: 5267, color: '#c98500' },
+  { name: 'JavaScript', lines: 3072, color: '#d55181' },
   { name: 'SQL', lines: 544, color: '#008300' },
   { name: 'Assembly', lines: 198, color: '#9085e9' },
 ]

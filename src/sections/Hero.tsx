@@ -247,7 +247,7 @@ export function Hero() {
 
       <div className="relative mx-auto mt-20 grid max-w-7xl grid-cols-2 gap-3 px-4 sm:px-6 md:mt-28 md:grid-cols-4">
         {[
-          { v: totals.tests.value, label: 'automated tests across 4 repos', suffix: '' },
+          { v: totals.tests.value, label: 'automated tests across 5 repos', suffix: '' },
           { v: 483, label: 'fastest measured query speed-up', suffix: '×' },
           { v: 4.11, label: 'fewer instructions with SIMD kernels', suffix: '×', d: 2 },
           { v: 4, label: 'control metrics where RL_PID beats the published agent', suffix: '/4' },

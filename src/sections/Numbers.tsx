@@ -6,7 +6,7 @@ import { Counter, Reveal, SectionHeading, Spotlight } from '../components/ui'
 import { SegmentedBar } from '../components/charts'
 
 const tiles: { icon: ReactNode; value: number; label: string; note: string }[] = [
-  { icon: <TestTubes />, value: totals.tests.value, label: 'automated tests', note: '342 + 125 + 24 + 11 across four repos' },
+  { icon: <TestTubes />, value: totals.tests.value, label: 'automated tests', note: '342 + 149 + 24 + 11 + 41 across five repos' },
   { icon: <GitCommitHorizontal />, value: totals.commits, label: 'commits', note: 'small, described steps' },
   { icon: <ScrollText />, value: totals.linesOfCode, label: 'lines of code', note: 'Java, TypeScript, C, Python, JavaScript, SQL' },
   { icon: <FileText />, value: totals.docsLines, label: 'lines of documentation', note: 'guides, flows, decisions, evidence' },
@@ -29,10 +29,10 @@ const repos = [
     name: 'product-catalog-service',
     url: 'https://github.com/RishitheB0T/product-catalog-service',
     span: 'Oct 20 – Oct 31, 2026',
-    commits: 13,
-    tests: 125,
-    loc: 6519,
-    docs: 4627,
+    commits: 14,
+    tests: 149,
+    loc: 8082,
+    docs: 4930,
     colors: 'from-amber-400 to-orange-500',
   },
   {
@@ -54,6 +54,16 @@ const repos = [
     loc: 1957,
     docs: 599,
     colors: 'from-rose-400 to-pink-500',
+  },
+  {
+    name: 'tiny-reasoner',
+    url: 'https://github.com/RishitheB0T/tiny-reasoner',
+    span: 'October 31, 2026',
+    commits: 17,
+    tests: 41,
+    loc: 2930,
+    docs: 884,
+    colors: 'from-lime-300 to-yellow-300',
   },
 ]
 
@@ -100,13 +110,14 @@ export function Numbers() {
                 { name: 'product-catalog-service', value: totals.tests.parts[1], color: '#d95926' },
                 { name: 'kestrel-rtos (on-target)', value: totals.tests.parts[2], color: '#199e70' },
                 { name: 'RL_PID', value: totals.tests.parts[3], color: '#c98500' },
+                { name: 'tiny-reasoner', value: totals.tests.parts[4], color: '#d55181' },
               ]}
             />
           </div>
         </Reveal>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {repos.map((r, i) => (
           <Reveal key={r.name} delay={i * 90}>
             <a href={r.url} target="_blank" rel="noreferrer" className="group block h-full">
