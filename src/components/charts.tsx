@@ -786,3 +786,119 @@ export function PairedBars({
     </figure>
   )
 }
+
+/* ---------- dot rows: accuracy per level, one dot per model (0–100 %) ---------- */
+
+const dotColors = ['#3987e5', '#d95926', '#199e70']
+
+export function LevelDots({
+  title,
+  note,
+  series,
+  rows,
+  tableLabel,
+}: {
+  title: string
+  note: string
+  series: string[]
+  rows: { label: string; note?: string; values: number[] }[]
+  tableLabel: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref)
+  const [hover, setHover] = useState<number | null>(null)
+  const ticks = [0, 25, 50, 75, 100]
+  return (
+    <figure ref={ref}>
+      <figcaption className="mb-4">
+        <div className="text-sm font-medium text-fg">{title}</div>
+        <div className="text-xs text-fg-3">{note}</div>
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-fg-2">
+          {series.map((s, i) => (
+            <span key={s} className="flex items-center gap-1.5">
+              <span className="size-2.5 rounded-full" style={{ background: dotColors[i] }} /> {s}
+            </span>
+          ))}
+        </div>
+      </figcaption>
+      <div className="space-y-1">
+        {rows.map((r, ri) => (
+          <div
+            key={r.label}
+            tabIndex={0}
+            onMouseEnter={() => setHover(ri)}
+            onMouseLeave={() => setHover(null)}
+            onFocus={() => setHover(ri)}
+            onBlur={() => setHover(null)}
+            aria-label={`${r.label}: ${series.map((s, i) => `${s} ${r.values[i]}%`).join(', ')}`}
+            className={`grid grid-cols-[5.5rem_1fr] items-center gap-3 rounded-lg px-1 py-1.5 transition sm:grid-cols-[8.5rem_1fr] ${hover === ri ? 'bg-white/[0.04]' : ''}`}
+          >
+            <div>
+              <div className="text-sm text-fg">{r.label}</div>
+              {r.note && <div className="text-[10.5px] leading-tight text-fg-3">{r.note}</div>}
+            </div>
+            <div className="relative h-7">
+              {ticks.map((t) => (
+                <span key={t} className="absolute inset-y-0 w-px bg-white/[0.07]" style={{ left: `${t}%` }} />
+              ))}
+              {r.values.map((v, si) => (
+                <span
+                  key={si}
+                  className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-ink-850 transition-[left] duration-[1200ms] ease-out"
+                  style={{ left: `${inView ? v : 0}%`, background: dotColors[si], transitionDelay: `${ri * 80 + si * 120}ms` }}
+                />
+              ))}
+              {hover === ri && (
+                <Tip x={Math.min(...r.values)}>
+                  <div className="font-semibold text-white">{r.label}</div>
+                  {series.map((s, i) => (
+                    <div key={s} className="flex items-center gap-2 text-fg-2">
+                      <span className="h-0.5 w-3 rounded" style={{ background: dotColors[i] }} />
+                      <b className="text-white">{r.values[i]}%</b> {s}
+                    </div>
+                  ))}
+                </Tip>
+              )}
+            </div>
+          </div>
+        ))}
+        <div className="grid grid-cols-[5.5rem_1fr] gap-3 px-1 sm:grid-cols-[8.5rem_1fr]">
+          <span />
+          <div className="relative h-5 border-t border-white/10">
+            {ticks.map((t) => (
+              <span key={t} className="absolute top-1 -translate-x-1/2 font-mono text-[10.5px] text-fg-3 tabular-nums" style={{ left: `${t}%` }}>
+                {t}%
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+      <TableToggle label={tableLabel}>
+        <table className="w-full min-w-[30rem] text-xs">
+          <thead className="bg-white/[0.03]">
+            <tr>
+              <th className={th}>Level</th>
+              {series.map((s) => (
+                <th key={s} className={th}>
+                  {s}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.label} className="border-t border-white/5">
+                <td className={td}>{r.label}</td>
+                {r.values.map((v, i) => (
+                  <td key={i} className={td}>
+                    {v}%
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableToggle>
+    </figure>
+  )
+}
