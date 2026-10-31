@@ -23,8 +23,8 @@ const steps: { when: string; title: string; body: ReactNode; icon: ReactNode; no
   },
   {
     when: 'October 2026',
-    title: 'product-catalog-service, kestrel-rtos and RL_PID',
-    body: 'A measured, documented Spring Boot + MySQL + Redis backend with a React storefront, a from-scratch RTOS with an int8 NN runtime, and RL_PID: a PPO-tuned PID that beats the published agent.',
+    title: 'Four more builds, and this site',
+    body: 'product-catalog-service, a measured Spring Boot + MySQL + Redis backend with a React storefront; kestrel-rtos, a from-scratch RTOS; RL_PID, a PPO-tuned PID that beats the published agent; tiny-reasoner, a language model from scratch improved with GRPO; and this portfolio.',
     icon: <Cpu />,
   },
   {

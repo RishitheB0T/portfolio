@@ -11,8 +11,9 @@ const whoami: TermLine[] = [
   { kind: 'out', text: 'frontend    React 19 · TypeScript · Vite · Tailwind CSS · Vitest' },
   { kind: 'out', text: 'data + AI   PostgreSQL/pgvector · MySQL · Redis · Spring AI · RAG' },
   { kind: 'out', text: 'embedded    C · Thumb-2 assembly · Cortex-M4 (STM32F4) · CMSIS-DSP' },
+  { kind: 'out', text: 'ml          PyTorch · transformers from scratch · SFT · GRPO · LoRA · PPO' },
   { kind: 'cmd', text: 'ls ~/projects' },
-  { kind: 'out', text: 'placement-prep/  product-catalog-service/  kestrel-rtos/  RL_PID/  edgemind/', tone: 'ok' },
+  { kind: 'out', text: 'placement-prep/  product-catalog-service/  kestrel-rtos/  RL_PID/  tiny-reasoner/  edgemind/', tone: 'ok' },
   { kind: 'cmd', text: 'echo $STATUS' },
   { kind: 'out', text: 'open to software engineering roles · placement season 2026–27', tone: 'warn' },
 ]
