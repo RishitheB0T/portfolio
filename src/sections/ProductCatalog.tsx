@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ArrowRight, BookOpenText, Check, Database, HardDrive, RefreshCw, Send, ShieldAlert, TimerOff, Zap } from 'lucide-react'
-import { Reveal, Spotlight } from '../components/ui'
+import { BrowserFrame, Reveal, Spotlight } from '../components/ui'
 import { ProjectHeader, SubHeading, TechRow } from '../components/project'
-import { QueryDumbbell } from '../components/charts'
+import { HBarChart, QueryDumbbell } from '../components/charts'
 import { useInView, useReducedMotion } from '../lib/hooks'
 
 const phases = [
@@ -18,12 +18,12 @@ const phases = [
   'Eviction + outage fallback',
   'Benchmarks & report',
   'React storefront',
-  'Admin views & polish',
+  'Detail view, admin & polish',
   'Containers & CI',
   'EC2 deployment',
   'Walkthrough & verified results',
 ]
-const DONE = 10
+const DONE = 12
 
 function PhaseTracker() {
   return (
@@ -256,8 +256,8 @@ const decisions = [
   ['D-008', 'Cache only product details first; search stays on MySQL'],
   ['D-025', 'Errors as RFC 9457 Problem Details'],
   ['D-027', 'Optimistic locking: version in the PUT body, 409 on conflict'],
-  ['D-032', 'A sort allowlist that always ends with id'],
-  ['D-038', 'Generated, fingerprinted benchmark data'],
+  ['D-049', 'When a benchmark run counts'],
+  ['D-050', 'The storefront’s shape: URL state, plain hooks, no router yet'],
   ['D-040', 'Four search indexes, chosen from measured plans'],
   ['D-046', 'Evict after commit, through a transactional event'],
   ['D-047', '200 ms Redis timeouts, and MySQL as the fallback'],
@@ -268,7 +268,7 @@ export function ProductCatalog() {
     <article id="product-catalog" className="relative" style={{ ['--accent' as string]: '#fbbf24', ['--accent-2' as string]: '#fb923c' }}>
       <ProjectHeader
         index="03.2"
-        tags={['Backend · performance', 'Spring Boot + MySQL + Redis', <><span className="size-1.5 rounded-full bg-amber-300" /> Phase 10 of 16</>]}
+        tags={['Backend · performance', 'Spring Boot + MySQL + Redis + React', <><span className="size-1.5 rounded-full bg-amber-300" /> Phase 12 of 16</>]}
         name="product-catalog-service"
         tagline={
           <>
@@ -282,16 +282,16 @@ export function ProductCatalog() {
         ]}
         stats={[
           { value: 483, suffix: '×', label: 'fastest query speed-up' },
+          { value: 3.3, decimals: 1, suffix: '×', label: 'faster product reads', note: 'warm cache vs MySQL, k6' },
           { value: 100000, label: 'products benchmarked' },
-          { value: 107, label: 'tests', note: '14 classes, real MySQL + Redis' },
-          { value: 47, label: 'written decisions' },
+          { value: 125, label: 'tests', note: '108 backend · 17 frontend' },
+          { value: 53, label: 'written decisions' },
           { value: 200, suffix: ' ms', label: 'Redis timeout', note: 'then MySQL answers' },
-          { value: 16, label: 'documented phases' },
         ]}
       >
         <p>
-          A layered Spring Boot REST API over MySQL, with Redis caching for product details, for a storefront called “FORM — The
-          Everyday Edit”. Search filters, sorts and paginates; writes use optimistic locking; every error is one standard format;
+          A layered Spring Boot REST API over MySQL, with Redis caching for product details, and a React storefront called “FORM —
+          The Everyday Edit” that searches it. Search filters, sorts and paginates; writes use optimistic locking; every error is one standard format;
           and the public deployment is read-only, enforced by the server itself. The README always describes what actually works,
           and labels plans as plans.
         </p>
@@ -363,6 +363,66 @@ export function ProductCatalog() {
       </div>
 
       <div className="mt-24">
+        <SubHeading
+          kicker="Load tested with k6"
+          title="Whole requests under load: 3.3× faster with a warm cache"
+          sub="10 users sending requests back to back, three 30-second trials after a warm-up, on the same 100,000 products, everything on one laptop. Medians of the three trials."
+        />
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <Reveal>
+            <div className="glass h-full rounded-3xl p-5 md:p-7">
+              <HBarChart
+                title="Product detail: requests per second"
+                note="More is better. Median latency on the right."
+                rows={[
+                  { name: 'Cache off (MySQL every time)', value: 1016, tag: '8.31 ms', tip: 'median 8.31 ms · p95 16.75 ms', cells: ['1,016', '8.31 ms', '16.75 ms'] },
+                  { name: 'Cache on, cold (every request a miss)', value: 578.5, valueText: '579', tag: '15.99 ms', tip: 'median 15.99 ms · p95 23.82 ms', cells: ['579', '15.99 ms', '23.82 ms'] },
+                  { name: 'Cache on, warm (99.6% hits)', value: 3310, tag: '2.35 ms', tip: 'median 2.35 ms · p95 5.35 ms', cells: ['3,310', '2.35 ms', '5.35 ms'] },
+                ]}
+                max={3900}
+                ticks={[0, 1000, 2000, 3000]}
+                tickLabel={(t) => (t === 0 ? '0' : `${t / 1000}K`)}
+                unit="requests/s"
+                tagWidth="4.5rem"
+                tableLabel="the product-detail runs"
+                tableHead={['Scenario', 'Requests/s', 'Median', 'p95']}
+              />
+            </div>
+          </Reveal>
+          <Reveal delay={100}>
+            <div className="glass h-full rounded-3xl p-5 md:p-7">
+              <HBarChart
+                title="Search mix: requests per second"
+                note="More is better. Median latency range of the four searches on the right."
+                rows={[
+                  { name: 'Without the V2 indexes', value: 44.8, valueText: '44.8', tag: '189–253 ms', tip: 'medians 189–253 ms · p95 296–383 ms', cells: ['44.8', '189–253 ms', '296–383 ms'] },
+                  { name: 'With the V2 indexes', value: 144.1, valueText: '144.1', tag: '33–91 ms', tip: 'medians 33–91 ms · p95 74–149 ms', cells: ['144.1', '33–91 ms', '74–149 ms'] },
+                ]}
+                max={170}
+                ticks={[0, 50, 100, 150]}
+                tickLabel={(t) => String(t)}
+                unit="requests/s"
+                tagWidth="6rem"
+                tableLabel="the search runs"
+                tableHead={['Scenario', 'Requests/s', 'Medians', 'p95']}
+              />
+              <p className="mt-4 text-xs leading-relaxed text-fg-3">
+                The indexes help less end to end than inside MySQL, because every search also runs a COUNT.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+        <Reveal className="mt-5">
+          <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.04] p-5 text-sm leading-relaxed text-fg-2">
+            <b className="text-amber-100">Why a cold cache is slower than no cache.</b> A miss is the uncached read plus a Redis lookup
+            before it and a Redis write after it. From the medians, the cache breaks even at about 2.3 reads of a product per minute:
+            a product read once a minute is slower with the cache, and one read three or more times is faster. Every run had to pass
+            written rules to count (all responses, timed trials within 5 s, a cold pass with exactly 0 hits).
+          </div>
+        </Reveal>
+      </div>
+
+      <div className="mt-24">
         <SubHeading kicker="Redis caching" title="Fast when Redis is up. Correct when it isn’t." sub="Product details are cached with the cache-aside pattern, cleared after every committed write, and MySQL takes over when Redis fails." />
         <Reveal>
           <CacheFlow />
@@ -380,8 +440,43 @@ export function ProductCatalog() {
 
       <div className="mt-24">
         <SubHeading
+          kicker="The storefront"
+          title="FORM, a React storefront on the real API"
+          sub="Search, category tabs, price and stock filters, chips, sorting and pagination. The search lives in the address bar, so every result page is a link you can share."
+        />
+        <div className="grid grid-cols-1 items-end gap-6 lg:grid-cols-[1fr_15rem]">
+          <Reveal>
+            <BrowserFrame url="form · the everyday edit">
+              <img src="./images/catalog/storefront.webp" alt="The FORM storefront: category tabs, price and stock filters, and the product grid" width={1440} height={900} loading="lazy" className="block w-full" />
+            </BrowserFrame>
+          </Reveal>
+          <Reveal delay={100} className="mx-auto w-full max-w-[15rem]">
+            <div className="overflow-hidden rounded-[2rem] border-[6px] border-ink-700 bg-ink-900 shadow-2xl shadow-black/60">
+              <img src="./images/catalog/storefront-phone.webp" alt="The storefront on a phone, with the filters behind a button" width={390} height={844} loading="lazy" className="block w-full" />
+            </div>
+          </Reveal>
+        </div>
+        <p className="mt-3 text-xs text-fg-3">The production build, with the API answered from the repo’s own 24-product demo catalog.</p>
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          {[
+            ['17 frontend tests', 'One request per typing pause, stale requests cancelled, filters reset the page, errors explained in plain words.'],
+            ['Shareable state', 'Search, filters, sort and page are kept in the address bar, so back and forward work and links reopen the same results.'],
+            ['Checked at three widths', '375, 768 and 1440 pixels in a real browser; filters move into a drawer on phones. Prices in rupees, licensed photos.'],
+          ].map(([t, b], i) => (
+            <Reveal key={t} delay={i * 70}>
+              <div className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+                <div className="text-sm font-semibold">{t}</div>
+                <p className="mt-1.5 text-sm leading-relaxed text-fg-2">{b}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-24">
+        <SubHeading
           kicker="Decision log"
-          title="47 decisions, each with its trade-off"
+          title="53 decisions, each with its trade-off"
           sub="Every choice is written down with the alternatives and why they lost. A few of them:"
         />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -401,7 +496,7 @@ export function ProductCatalog() {
             rel="noreferrer"
             className="inline-flex items-center gap-2 text-sm font-medium text-amber-200 hover:text-amber-100"
           >
-            <BookOpenText className="size-4" /> Read all 47 in DECISIONS.md <ArrowRight className="size-3.5" />
+            <BookOpenText className="size-4" /> Read all 53 in DECISIONS.md <ArrowRight className="size-3.5" />
           </a>
         </Reveal>
       </div>
@@ -419,6 +514,10 @@ export function ProductCatalog() {
             { name: 'Docker Compose', icon: 'docker' },
             { name: 'JUnit + Mockito', icon: 'junit' },
             { name: 'Maven', icon: 'maven' },
+            { name: 'k6 load tests' },
+            { name: 'React 19', icon: 'react' },
+            { name: 'Vite', icon: 'vitejs' },
+            { name: 'Vitest', icon: 'vitest' },
           ]}
         />
       </Reveal>

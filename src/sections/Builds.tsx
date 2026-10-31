@@ -20,7 +20,7 @@ const cards = [
     id: 'product-catalog',
     name: 'product-catalog-service',
     kind: 'Backend performance',
-    line: 'Spring Boot over MySQL and Redis: indexes from measured plans, cache-aside with fallback, 47 written decisions.',
+    line: 'Spring Boot over MySQL and Redis with a React storefront: indexes from measured plans, a cache load-tested with k6.',
     metric: '483×',
     metricLabel: 'faster storefront query',
     grad: 'from-amber-300 via-orange-400 to-rose-500',
