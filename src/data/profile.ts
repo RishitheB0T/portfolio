@@ -47,7 +47,7 @@ export const edgemind = {
 // What is being built right now (from each project's roadmap).
 export const now = [
   { project: 'placement-prep', next: 'Adding company-wise AI mock interviews' },
-  { project: 'product-catalog', next: 'Phase 13: product detail view, local admin and accessibility' },
+  { project: 'product-catalog', next: 'Phase 14: production containers and CI' },
   { project: 'kestrel-rtos', next: 'Real-board cycle counts on an STM32F4' },
   { project: 'RL_PID', next: 'Running the controller on a real STM32F407 board' },
 ]

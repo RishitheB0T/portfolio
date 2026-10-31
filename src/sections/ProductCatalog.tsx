@@ -18,12 +18,12 @@ const phases = [
   'Eviction + outage fallback',
   'Benchmarks & report',
   'React storefront',
-  'Detail view, admin & polish',
+  'Product pages & admin',
   'Containers & CI',
   'EC2 deployment',
   'Walkthrough & verified results',
 ]
-const DONE = 12
+const DONE = 13
 
 function PhaseTracker() {
   return (
@@ -268,7 +268,7 @@ export function ProductCatalog() {
     <article id="product-catalog" className="relative" style={{ ['--accent' as string]: '#fbbf24', ['--accent-2' as string]: '#fb923c' }}>
       <ProjectHeader
         index="03.2"
-        tags={['Backend · performance', 'Spring Boot + MySQL + Redis + React', <><span className="size-1.5 rounded-full bg-amber-300" /> Phase 12 of 16</>]}
+        tags={['Backend · performance', 'Spring Boot + MySQL + Redis + React', <><span className="size-1.5 rounded-full bg-amber-300" /> Phase 13 of 16</>]}
         name="product-catalog-service"
         tagline={
           <>
@@ -284,8 +284,8 @@ export function ProductCatalog() {
           { value: 483, suffix: '×', label: 'fastest query speed-up' },
           { value: 3.3, decimals: 1, suffix: '×', label: 'faster product reads', note: 'warm cache vs MySQL, k6' },
           { value: 100000, label: 'products benchmarked' },
-          { value: 125, label: 'tests', note: '108 backend · 17 frontend' },
-          { value: 53, label: 'written decisions' },
+          { value: 149, label: 'tests', note: '110 backend · 39 frontend' },
+          { value: 56, label: 'written decisions' },
           { value: 200, suffix: ' ms', label: 'Redis timeout', note: 'then MySQL answers' },
         ]}
       >
@@ -442,7 +442,7 @@ export function ProductCatalog() {
         <SubHeading
           kicker="The storefront"
           title="FORM, a React storefront on the real API"
-          sub="Search, category tabs, price and stock filters, chips, sorting and pagination. The search lives in the address bar, so every result page is a link you can share."
+          sub="Search, category tabs, price and stock filters, chips, sorting and pagination, product pages, and a local admin. The search lives in the address bar, so every result page is a link you can share."
         />
         <div className="grid grid-cols-1 items-end gap-6 lg:grid-cols-[1fr_15rem]">
           <Reveal>
@@ -456,10 +456,28 @@ export function ProductCatalog() {
             </div>
           </Reveal>
         </div>
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+          <Reveal>
+            <BrowserFrame url="form · /products/7">
+              <img src="./images/catalog/product-page.webp" alt="A product page: the Suede Desert Boot with its photo, price, stock and SKU" width={1440} height={900} loading="lazy" className="block w-full" />
+            </BrowserFrame>
+            <p className="mt-2 text-sm text-fg-2">
+              <b className="text-white">Product pages</b> · photo, price in rupees, live stock and the SKU
+            </p>
+          </Reveal>
+          <Reveal delay={100}>
+            <BrowserFrame url="form · /admin">
+              <img src="./images/catalog/admin.webp" alt="The local admin: a table of all 24 products with Edit and Delete for each" width={1440} height={900} loading="lazy" className="block w-full" />
+            </BrowserFrame>
+            <p className="mt-2 text-sm text-fg-2">
+              <b className="text-white">Local admin</b> · add, edit and delete with confirmation; shown only when the server allows writes
+            </p>
+          </Reveal>
+        </div>
         <p className="mt-3 text-xs text-fg-3">The production build, with the API answered from the repo’s own 24-product demo catalog.</p>
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
           {[
-            ['17 frontend tests', 'One request per typing pause, stale requests cancelled, filters reset the page, errors explained in plain words.'],
+            ['39 frontend tests', 'One request per typing pause, stale requests cancelled, version conflicts explained, errors in plain words.'],
             ['Shareable state', 'Search, filters, sort and page are kept in the address bar, so back and forward work and links reopen the same results.'],
             ['Checked at three widths', '375, 768 and 1440 pixels in a real browser; filters move into a drawer on phones. Prices in rupees, licensed photos.'],
           ].map(([t, b], i) => (
@@ -476,7 +494,7 @@ export function ProductCatalog() {
       <div className="mt-24">
         <SubHeading
           kicker="Decision log"
-          title="53 decisions, each with its trade-off"
+          title="56 decisions, each with its trade-off"
           sub="Every choice is written down with the alternatives and why they lost. A few of them:"
         />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -496,7 +514,7 @@ export function ProductCatalog() {
             rel="noreferrer"
             className="inline-flex items-center gap-2 text-sm font-medium text-amber-200 hover:text-amber-100"
           >
-            <BookOpenText className="size-4" /> Read all 53 in DECISIONS.md <ArrowRight className="size-3.5" />
+            <BookOpenText className="size-4" /> Read all 56 in DECISIONS.md <ArrowRight className="size-3.5" />
           </a>
         </Reveal>
       </div>
